@@ -46,15 +46,22 @@ public class CPInstance {
         }
 
         // Enforce that every variable appears exactly once (and 0 fills the rest)
-        IloIntExpr[] cards = new IloIntExpr[problem.numCustomers + 1];
-        int[] values = new int[problem.numCustomers + 1];
-        cards[0] = cp.sum(cp.intExpr(), problem.numVehicles * problem.maxCustomersPerVehicle - problem.numCustomers);
-        values[0] = 0;
-        for (int c = 1; c <= problem.numCustomers; c ++) {
-            cards[c] = cp.sum(cp.intExpr(), 1);
-            values[c] = c;
+        if (Settings.cpUseDistribute) {
+            IloIntExpr[] cards = new IloIntExpr[problem.numCustomers + 1];
+            int[] values = new int[problem.numCustomers + 1];
+            cards[0] = cp.sum(cp.intExpr(), problem.numVehicles * problem.maxCustomersPerVehicle - problem.numCustomers);
+            values[0] = 0;
+            for (int c = 1; c <= problem.numCustomers; c ++) {
+                cards[c] = cp.sum(cp.intExpr(), 1);
+                values[c] = c;
+            }
+            cp.add(cp.distribute(cards, values, allVars));
+        } else {
+            for (int c = 1; c <= problem.numCustomers; c ++) {
+                cp.add(cp.eq(cp.count(allVars, c), 1));
+            }
+            cp.add(cp.eq(cp.count(allVars, 0), problem.numVehicles * problem.maxCustomersPerVehicle - problem.numCustomers));
         }
-        cp.add(cp.distribute(cards, values, allVars));
 
         // Find total distance traveled by trucks
         IloNumExpr cost = cp.numExpr();

@@ -18,6 +18,7 @@ public class Main {
         CliArgs parser = new CliArgs(args);
         String input = parser.arg(0);
         Settings.verbosity = parser.switchIntegerValue("-verbosity", 0);
+        Settings.cpUseDistribute = parser.switchBooleanValue("-cpUseDistribute", false);
         Settings.print();
 
         Path path = Paths.get(input);
