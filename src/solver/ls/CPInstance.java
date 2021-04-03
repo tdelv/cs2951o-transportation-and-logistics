@@ -42,20 +42,29 @@ public class CPInstance {
 
         // Set up variables
         IloIntVar[][] visitVehicleCustomer = new IloIntVar[problem.numVehicles][problem.maxCustomersPerVehicle];
+        int totalVars = 0;
         for (int v = 0; v < problem.numVehicles; v++) {
             Set<Integer> customers = new HashSet<>(setVars.get(v));
             customers.addAll(unclaimedCustomers);
             int[] customerArray = customers.stream()
                     .mapToInt(Integer::intValue)
                     .toArray();
-            for (int c = 0; c < problem.maxCustomersPerVehicle; c++) {
+            int maxCustomersForVehicle = problem.numCustomers / v;
+            int numCustomers;
+            if (Settings.cpReduceArrLength) {
+                numCustomers = Math.min(problem.maxCustomersPerVehicle, maxCustomersForVehicle);
+            } else {
+                numCustomers = problem.maxCustomersPerVehicle;
+            }
+            totalVars += numCustomers;
+            for (int c = 0; c < numCustomers; c++) {
                 visitVehicleCustomer[v][c] = cp.intVar(customerArray);
             }
         }
 
         // Enforce that zeroes only appear as tail of sequence
         for (int v = 0; v < problem.numVehicles; v++) {
-            for (int c = 0; c < problem.maxCustomersPerVehicle - 1; c++) {
+            for (int c = 0; c < visitVehicleCustomer[v].length - 1; c++) {
                 cp.add(cp.ifThen(
                         cp.eq(visitVehicleCustomer[v][c], 0),
                         cp.eq(visitVehicleCustomer[v][c + 1], 0)));
@@ -63,10 +72,11 @@ public class CPInstance {
         }
 
         // Flatten variable array
-        IloIntVar[] allVars = new IloIntVar[problem.numVehicles * problem.maxCustomersPerVehicle];
+        IloIntVar[] allVars = new IloIntVar[totalVars];
+        int currVar = 0;
         for (int v = 0; v < problem.numVehicles; v++) {
-            for (int c = 0; c < problem.maxCustomersPerVehicle - 1; c++) {
-                allVars[v * problem.numCustomers + c] = visitVehicleCustomer[v][c];
+            for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
+                allVars[currVar++] = visitVehicleCustomer[v][c];
             }
         }
 
@@ -74,7 +84,7 @@ public class CPInstance {
         if (Settings.cpUseDistribute) {
             IloIntExpr[] cards = new IloIntExpr[problem.numCustomers + 1];
             int[] values = new int[problem.numCustomers + 1];
-            cards[0] = cp.sum(cp.intExpr(), problem.numVehicles * problem.maxCustomersPerVehicle - problem.numCustomers);
+            cards[0] = cp.sum(cp.intExpr(), totalVars - problem.numCustomers);
             values[0] = 0;
             for (int c = 1; c <= problem.numCustomers; c++) {
                 cards[c] = cp.sum(cp.intExpr(), 1);
@@ -85,7 +95,7 @@ public class CPInstance {
             for (int c = 1; c <= problem.numCustomers; c++) {
                 cp.add(cp.eq(cp.count(allVars, c), 1));
             }
-            cp.add(cp.eq(cp.count(allVars, 0), problem.numVehicles * problem.maxCustomersPerVehicle - problem.numCustomers));
+            cp.add(cp.eq(cp.count(allVars, 0), totalVars - problem.numCustomers));
         }
 
         // Find total distance traveled by trucks
@@ -93,7 +103,7 @@ public class CPInstance {
         for (int v = 0; v < problem.numVehicles; v++) {
             IloNumExpr x = cp.numExpr(), y = cp.numExpr();
             IloNumExpr dist = cp.numExpr();
-            for (int c = 0; c < problem.maxCustomersPerVehicle - 1; c++) {
+            for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
                 IloIntVar loc = visitVehicleCustomer[v][c];
                 IloNumExpr newX = cp.element(problem.xCoordOfCustomer, loc);
                 IloNumExpr newY = cp.element(problem.yCoordOfCustomer, loc);
@@ -112,7 +122,7 @@ public class CPInstance {
             List<List<Integer>> paths = new ArrayList<>();
             for (int v = 0; v < problem.numVehicles; v++) {
                 List<Integer> path = new ArrayList<>();
-                for (int c = 0; c < problem.maxCustomersPerVehicle; c++) {
+                for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
                     int loc = (int) cp.getValue(visitVehicleCustomer[v][c]);
                     if (loc == 0) {
                         break;

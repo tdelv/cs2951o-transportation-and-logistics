@@ -9,11 +9,13 @@ public class Settings {
 
     // CP
     static boolean cpUseDistribute = false;
+    static boolean cpReduceArrLength = true;
 
     public static void print() {
         System.out.println("Settings:");
         System.out.println("  Verbosity: " + verbosity);
         System.out.println("  CP:");
         System.out.println("    cpUseDistribute: " + cpUseDistribute);
+        System.out.println("    cpReduceArrLength: " + cpReduceArrLength);
     }
 }

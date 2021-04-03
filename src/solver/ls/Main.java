@@ -19,6 +19,7 @@ public class Main {
         String input = parser.arg(0);
         Settings.verbosity = parser.switchIntegerValue("-verbosity", 0);
         Settings.cpUseDistribute = parser.switchBooleanValue("-cpUseDistribute", false);
+        Settings.cpReduceArrLength = parser.switchBooleanValue("-cpReduceArrLength", true);
         Settings.print();
 
         Path path = Paths.get(input);
