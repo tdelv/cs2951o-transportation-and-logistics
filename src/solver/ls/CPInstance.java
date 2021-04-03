@@ -1,6 +1,7 @@
 package solver.ls;
 
 import ilog.concert.IloException;
+import ilog.concert.IloIntExpr;
 import ilog.concert.IloIntVar;
 import ilog.concert.IloNumExpr;
 import ilog.cp.IloCP;
@@ -19,6 +20,7 @@ public class CPInstance {
     }
 
     public Optional<Solution> solve() throws IloException {
+        // Set up variables
         IloIntVar[][] visitVehicleCustomer = new IloIntVar[problem.numVehicles][problem.maxCustomersPerVehicle];
         for (int v = 0; v < problem.numVehicles; v ++) {
             for (int c = 0; c < problem.maxCustomersPerVehicle; c ++) {
@@ -26,6 +28,7 @@ public class CPInstance {
             }
         }
 
+        // Enforce that zeroes only appear as tail of sequence
         for (int v = 0; v < problem.numVehicles; v ++) {
             for (int c = 0; c < problem.maxCustomersPerVehicle - 1; c ++) {
                 cp.add(cp.ifThen(
@@ -34,6 +37,7 @@ public class CPInstance {
             }
         }
 
+        // Flatten variable array
         IloIntVar[] allVars = new IloIntVar[problem.numVehicles * problem.maxCustomersPerVehicle];
         for (int v = 0; v < problem.numVehicles; v ++) {
             for (int c = 0; c < problem.maxCustomersPerVehicle - 1; c ++) {
@@ -41,12 +45,18 @@ public class CPInstance {
             }
         }
 
+        // Enforce that every variable appears exactly once (and 0 fills the rest)
+        IloIntExpr[] cards = new IloIntExpr[problem.numCustomers + 1];
+        int[] values = new int[problem.numCustomers + 1];
+        cards[0] = cp.sum(cp.intExpr(), problem.numVehicles * problem.maxCustomersPerVehicle - problem.numCustomers);
+        values[0] = 0;
         for (int c = 1; c <= problem.numCustomers; c ++) {
-            cp.add(cp.eq(cp.count(allVars, c), 1));
+            cards[c] = cp.sum(cp.intExpr(), 1);
+            values[c] = c;
         }
-        // Redundant
-        cp.add(cp.eq(cp.count(allVars, 0), problem.numVehicles * problem.maxCustomersPerVehicle - problem.numCustomers));
+        cp.add(cp.distribute(cards, values, allVars));
 
+        // Find total distance traveled by trucks
         IloNumExpr cost = cp.numExpr();
         for (int v = 0; v < problem.numVehicles; v ++) {
             IloNumExpr x = cp.numExpr(), y = cp.numExpr();
@@ -65,6 +75,7 @@ public class CPInstance {
         }
         cp.addMinimize(cost);
 
+        // Solves
         if (cp.solve()) {
             List<List<Integer>> paths = new ArrayList<>();
             for (int v = 0; v < problem.numVehicles; v ++) {
