@@ -1,9 +1,12 @@
 package solver.ls;
 
+import ilog.concert.IloException;
+
 import java.io.FileNotFoundException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) {
@@ -15,19 +18,38 @@ public class Main {
         CliArgs parser = new CliArgs(args);
         String input = parser.arg(0);
         Settings.verbosity = parser.switchIntegerValue("-verbosity", 0);
+        Settings.print();
 
         Path path = Paths.get(input);
         String filename = path.getFileName().toString();
         System.out.println("Instance: " + input);
 
-        Timer watch = new Timer();
-        watch.start();
-        VRPInstance instance = new VRPInstance(input);
-        watch.stop();
+        try {
+            Timer watch = new Timer();
+            watch.start();
+            VRPInstance problem = new VRPInstance(input);
+            Optional<Solution> solution = problem.solve();
+            watch.stop();
 
-        System.out.println(
-                "Instance: " + filename +
-                " Time: " + String.format("%.2f", watch.getTotalTime()) +
-                " Result: " + "N/A" + " Solution: N/A");
+            if (solution.isPresent()) {
+                System.out.println("Instance: " + filename +
+                        " Time: " + watch +
+                        " Result: " + solution.get().getCost() +
+                        " Solution: " + solution.get().toString()
+                );
+            } else {
+                System.out.println("Instance: " + filename +
+                        " Time: " + watch +
+                        " Result: --" +
+                        " Solution: --"
+                );
+            }
+
+        } catch (IloException e) {
+            System.out.println("CPLEX error:" + e.getMessage());
+            if (Settings.verbosity > 0) {
+                e.printStackTrace();
+            }
+        }
     }
 }

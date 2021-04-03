@@ -1,8 +1,11 @@
 package solver.ls;
 
+import ilog.concert.IloException;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import java.util.Optional;
 import java.util.Scanner;
 
 public class VRPInstance {
@@ -43,5 +46,10 @@ public class VRPInstance {
 
         for (int i = 0; i < numCustomers; i++)
             System.out.println(demandOfCustomer[i] + " " + xCoordOfCustomer[i] + " " + yCoordOfCustomer[i]);
+    }
+
+    public Optional<Solution> solve() throws IloException {
+        LPInstance lpInstance = new LPInstance(this);
+        return lpInstance.solve();
     }
 }

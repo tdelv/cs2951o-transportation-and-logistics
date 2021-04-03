@@ -58,4 +58,9 @@ public class Timer {
     public static void printTimers() {
         System.out.println("Timers:");
     }
+
+    @Override
+    public String toString() {
+        return String.format("%.2f", this.getTotalTime());
+    }
 }
