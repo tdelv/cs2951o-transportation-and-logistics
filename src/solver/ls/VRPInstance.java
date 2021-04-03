@@ -49,7 +49,7 @@ public class VRPInstance {
     }
 
     public Optional<Solution> solve() throws IloException {
-        LPInstance lpInstance = new LPInstance(this);
-        return lpInstance.solve();
+        CPInstance cpInstance = new CPInstance(this);
+        return cpInstance.solve();
     }
 }
