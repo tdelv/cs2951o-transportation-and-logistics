@@ -19,24 +19,24 @@ public class CPInstance {
     }
 
     public Optional<Solution> solve() throws IloException {
-        IloIntVar[][] visitVehicleCustomer = new IloIntVar[problem.numVehicles][problem.numCustomers];
+        IloIntVar[][] visitVehicleCustomer = new IloIntVar[problem.numVehicles][problem.maxCustomersPerVehicle];
         for (int v = 0; v < problem.numVehicles; v ++) {
-            for (int c = 0; c < problem.numCustomers; c ++) {
+            for (int c = 0; c < problem.maxCustomersPerVehicle; c ++) {
                 visitVehicleCustomer[v][c] = cp.intVar(0, problem.numVehicles);
             }
         }
 
         for (int v = 0; v < problem.numVehicles; v ++) {
-            for (int c = 0; c < problem.numCustomers - 1; c ++) {
+            for (int c = 0; c < problem.maxCustomersPerVehicle - 1; c ++) {
                 cp.add(cp.ifThen(
                         cp.eq(visitVehicleCustomer[v][c], 0),
                         cp.eq(visitVehicleCustomer[v][c + 1], 0)));
             }
         }
 
-        IloIntVar[] allVars = new IloIntVar[problem.numVehicles * problem.numCustomers];
+        IloIntVar[] allVars = new IloIntVar[problem.numVehicles * problem.maxCustomersPerVehicle];
         for (int v = 0; v < problem.numVehicles; v ++) {
-            for (int c = 0; c < problem.numCustomers - 1; c ++) {
+            for (int c = 0; c < problem.maxCustomersPerVehicle - 1; c ++) {
                 allVars[v * problem.numCustomers + c] = visitVehicleCustomer[v][c];
             }
         }
@@ -44,13 +44,14 @@ public class CPInstance {
         for (int c = 1; c <= problem.numCustomers; c ++) {
             cp.add(cp.eq(cp.count(allVars, c), 1));
         }
-
+        // Redundant
+        cp.add(cp.eq(cp.count(allVars, 0), problem.numVehicles * problem.maxCustomersPerVehicle - problem.numCustomers));
 
         IloNumExpr cost = cp.numExpr();
         for (int v = 0; v < problem.numVehicles; v ++) {
             IloNumExpr x = cp.numExpr(), y = cp.numExpr();
             IloNumExpr dist = cp.numExpr();
-            for (int c = 0; c < problem.numCustomers - 1; c ++) {
+            for (int c = 0; c < problem.maxCustomersPerVehicle - 1; c ++) {
                 IloIntVar loc = visitVehicleCustomer[v][c];
                 IloNumExpr newX = cp.element(problem.xCoordOfCustomer, loc);
                 IloNumExpr newY = cp.element(problem.yCoordOfCustomer, loc);
@@ -68,7 +69,7 @@ public class CPInstance {
             List<List<Integer>> paths = new ArrayList<>();
             for (int v = 0; v < problem.numVehicles; v ++) {
                 List<Integer> path = new ArrayList<>();
-                for (int c = 0; c < problem.numCustomers; c ++) {
+                for (int c = 0; c < problem.maxCustomersPerVehicle; c ++) {
                     int loc = (int)cp.getValue(visitVehicleCustomer[v][c]);
                     if (loc == 0) {
                         break;

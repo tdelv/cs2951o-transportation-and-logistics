@@ -5,6 +5,7 @@ import ilog.concert.IloException;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -16,6 +17,8 @@ public class VRPInstance {
     int[] demandOfCustomer;        // the demand of each customer
     double[] xCoordOfCustomer;    // the x coordinate of each customer
     double[] yCoordOfCustomer;    // the y coordinate of each customer
+
+    int maxCustomersPerVehicle;
 
     public VRPInstance(String fileName) {
         Scanner read = null;
@@ -46,6 +49,19 @@ public class VRPInstance {
 
         for (int i = 0; i < numCustomers; i++)
             System.out.println(demandOfCustomer[i] + " " + xCoordOfCustomer[i] + " " + yCoordOfCustomer[i]);
+
+        // Find maximum number of customers a vehicle can deliver
+        int[] sortedDemands = Arrays.copyOf(demandOfCustomer, demandOfCustomer.length);
+        Arrays.sort(sortedDemands);
+        maxCustomersPerVehicle = 0;
+        int totalDemand = 0;
+        for (int c = 0; c < numCustomers; c ++) {
+            totalDemand += demandOfCustomer[c];
+            if (totalDemand > vehicleCapacity) {
+                break;
+            }
+            maxCustomersPerVehicle++;
+        }
     }
 
     public Optional<Solution> solve() throws IloException {
