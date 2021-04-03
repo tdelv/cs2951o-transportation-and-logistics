@@ -28,14 +28,20 @@ public class Main {
             Timer watch = new Timer();
             watch.start();
             VRPInstance problem = new VRPInstance(input);
-            Optional<Solution> solution = problem.solve();
+            Optional<Solution> solutionOpt = problem.solve();
             watch.stop();
 
-            if (solution.isPresent()) {
+            if (solutionOpt.isPresent()) {
+                Solution solution = solutionOpt.get();
+                if (Settings.verbosity > 0) {
+                    assert solution.isWellFormed() : "Solution not well formed: " + solution.toString();
+                    assert solution.isFeasible() : "Solution is not feasible: " + solution.toString();
+                }
+
                 System.out.println("Instance: " + filename +
                         " Time: " + watch +
-                        " Result: " + solution.get().getCost() +
-                        " Solution: " + solution.get().toString()
+                        " Result: " + solution.getCost() +
+                        " Solution: " + solution.toString()
                 );
             } else {
                 System.out.println("Instance: " + filename +
