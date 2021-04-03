@@ -1,4 +1,4 @@
 .idea
-project5.iml
+*.iml
 compile.sh
 run.sh
