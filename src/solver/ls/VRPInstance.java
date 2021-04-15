@@ -56,7 +56,7 @@ public class VRPInstance {
         maxCustomersPerVehicle = 0;
         int totalDemand = 0;
         for (int c = 0; c < numCustomers; c ++) {
-            totalDemand += demandOfCustomer[c];
+            totalDemand += sortedDemands[c];
             if (totalDemand > vehicleCapacity) {
                 break;
             }

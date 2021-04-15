@@ -20,4 +20,5 @@ export ILOG_LICENSE_FILE=/gpfs/main/sys/shared/psfu/local/projects/cplex/ilm/cur
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/gpfs/main/sys/shared/psfu/local/projects/cplex/CPLEX_Studio_Academic/12.3/x86_64/cpoptimizer/bin/x86-64_sles10_4.1:/gpfs/main/sys/shared/psfu/local/projects/cplex/CPLEX_Studio_Academic/12.3/x86_64/cplex/bin/x86-64_sles10_4.1
 
 # add the solver jar to the classpath and run
-java -ea -cp /gpfs/main/sys/shared/psfu/local/projects/cplex/CPLEX_Studio_Academic/12.3/x86_64/cplex/lib/cplex.jar:src;/gpfs/main/sys/shared/psfu/local/projects/cplex/CPLEX_Studio_Academic/12.3/x86_64/cpoptimizer/lib/ILOG.CP.jar:src solver.ip.Main $input $args
+#java -ea -cp /gpfs/main/sys/shared/psfu/local/projects/cplex/CPLEX_Studio_Academic/12.3/x86_64/cpoptimizer/lib/ILOG.CP.jar/gpfs/main/sys/shared/psfu/local/projects/cplex/CPLEX_Studio_Academic/12.3/x86_64/cpoptimizer/lib/ILOG.CP.jar:/gpfs/main/sys/shared/psfu/local/projects/cplex/CPLEX_Studio_Academic/12.3/x86_64/cplex/lib/cplex.jar:src solver.ls.Main $input $args
+java -ea -cp ./ILOG.jar:src solver.ls.Main $input $args
