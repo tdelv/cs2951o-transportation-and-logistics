@@ -77,11 +77,13 @@ public class TSPState extends AbstractLocalSearchState<Double> {
 
     @Override
     void print() {
-        System.out.print("TSPState:");
-        for (Integer loc : order) {
-            System.out.print(" " + loc);
+        if (Settings.verbosity >= 5) {
+            System.out.print("TSPState:");
+            for (Integer loc : order) {
+                System.out.print(" " + loc);
+            }
+            System.out.println();
         }
-        System.out.println();
     }
 
     @Override
