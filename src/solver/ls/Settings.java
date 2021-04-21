@@ -25,9 +25,9 @@ public class Settings {
     static double vrpSearchTime = 30.0;
 
     // TSP
-    static SearchLimit tspLimitBy = SearchLimit.dist;
+    static SearchLimit tspLimitBy = SearchLimit.both;
     static int tspSearchDist = 3;
-    static double tspSearchTime = 3.0;
+    static double tspSearchTime = 1.0;
 
     // Rand Walk
     static double probRandWalk = 0.1;
