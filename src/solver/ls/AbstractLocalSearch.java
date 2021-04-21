@@ -37,7 +37,7 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
                     System.out.println("Random step!");
                 }
                 probRandWalk *= Settings.probRandWalkFactor;
-                current = (State) current.getRandom(Settings.rand.nextDouble());
+                current = (State) current.getRandom(Settings.rand.nextDouble() * Settings.randMaxDist);
                 continue;
             }
 
