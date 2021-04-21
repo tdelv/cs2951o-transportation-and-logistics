@@ -114,7 +114,14 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
             protected void run() throws InterruptedException {
                 for (State neighbor : getNeighbors(state, dist)) {
                     if (neighbor.isValid()) {
+                        if (state.getProblem().equals("VRP")) {
+                            System.out.println("Found valid.");
+                        }
                         this.yield(neighbor);
+                    } else {
+                        if (state.getProblem().equals("VRP")) {
+                            System.out.println("Found invalid.");
+                        }
                     }
                 }
             }
