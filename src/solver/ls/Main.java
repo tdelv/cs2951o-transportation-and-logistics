@@ -22,6 +22,8 @@ public class Main {
         Settings.cpUseDistribute = parser.switchBooleanValue("-cpUseDistribute", false);
         Settings.cpReduceArrLength = parser.switchBooleanValue("-cpReduceArrLength", true);
 
+        Settings.lsTakeFirst = parser.switchBooleanValue("-lsTakeFirst", true);
+
         Settings.vrpLimitBy = Settings.SearchLimit.valueOf(parser.switchValue("-vrpLimitBy", "time"));
         Settings.vrpSearchDist = parser.switchIntegerValue("-vrpSearchDist", 3);
         Settings.vrpSearchTime = parser.switchDoubleValue("-vrpSearchTime", 30.0);

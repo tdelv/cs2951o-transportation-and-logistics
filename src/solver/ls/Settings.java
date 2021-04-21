@@ -17,6 +17,7 @@ public class Settings {
         time,
         both
     }
+    static boolean lsTakeFirst = true;
 
     // VRP
     static SearchLimit vrpLimitBy = SearchLimit.time;
@@ -39,6 +40,7 @@ public class Settings {
         System.out.println("    cpUseDistribute: " + cpUseDistribute);
         System.out.println("    cpReduceArrLength: " + cpReduceArrLength);
         System.out.println("  LS:");
+        System.out.println("    lsTakeFirst: " + lsTakeFirst);
         System.out.println("    vrp:");
         System.out.println("      vrpLimitBy: " + vrpLimitBy);
         System.out.println("      vrpSearchDist: " + vrpSearchDist);
