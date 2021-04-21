@@ -69,7 +69,7 @@ public class VRPInstance {
         if (!feasible.isPresent()) {
             return feasible;
         }
-        if (Settings.verbosity > 1) {
+        if (Settings.verbosity >= 1) {
             System.out.println("Initial feasibility cost: " + feasible.get().getCost());
         }
 

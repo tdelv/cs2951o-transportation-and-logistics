@@ -28,7 +28,7 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
         Timer timer = new Timer();
         timer.start();
         while (!maxDist.isPresent() || dist <= maxDist.get()) {
-            if (Settings.verbosity > 3) {
+            if (Settings.verbosity >= 3) {
                 current.print();
             }
             // Take a random step
@@ -50,6 +50,9 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
                 } else {
                     if (lt(neighbor, current)) {
                         newCurrent = Optional.of(neighbor);
+
+                        best = min(best, neighbor);
+                        break;
                     }
                 }
 
