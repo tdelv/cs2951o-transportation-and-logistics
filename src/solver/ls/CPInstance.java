@@ -77,7 +77,7 @@ public class CPInstance {
             }
         }
 
-        if (Settings.verbosity > 5) {
+        if (Settings.verbosity >= 0) {
             for (int v = 0; v < problem.numVehicles; v++) {
                 System.out.println("Vehicle " + v + ":");
                 for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
