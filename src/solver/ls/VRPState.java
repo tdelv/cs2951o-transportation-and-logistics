@@ -37,7 +37,9 @@ public class VRPState extends AbstractLocalSearchState<Double> {
     @Override
     Double getValue() {
         double totalCost = 0;
+        System.out.println("getValue VRP");
         for (int i = 0; i < paths.size(); i ++) {
+            System.out.println("  solve " + (i + 1) + " / " + paths.size());
             TSPLocalSearch tspLS = new TSPLocalSearch(problem, paths.get(i));
             TSPState best = tspLS.solve();
             paths.set(i, best.getOrder());
