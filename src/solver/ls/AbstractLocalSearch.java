@@ -43,6 +43,7 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
 
             Optional<State> newCurrent = Optional.empty();
             for (State neighbor : getValidNeighbors(current, dist)) {
+                System.out.println("NEIGHBOR");
                 if (best.getProblem().equals("VRP") && Settings.rand.nextDouble() < probRandWalk) {
                     if (Settings.verbosity >= 3) {
                         System.out.println("Random neighbor! " + best.getProblem());
@@ -59,7 +60,7 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
                 } else {
                     if (lt(neighbor, current)) {
                         newCurrent = Optional.of(neighbor);
-
+                        System.out.println("SIZE: " + neighbor.getValueRemember());
                         if (Settings.lsTakeFirst) {
                             best = min(best, neighbor);
                             break;
