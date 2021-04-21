@@ -146,7 +146,7 @@ public class VRPState extends AbstractLocalSearchState<Double> {
 
     @Override
     void print() {
-        System.out.println("VRPState:");
+        System.out.println("VRPState: " + this.getValue());
         for (List<Integer> path : paths) {
             System.out.print(" ");
             for (Integer loc : path) {
