@@ -159,4 +159,7 @@ public class VRPState extends AbstractLocalSearchState<Double> {
         }
         System.out.println();
     }
+
+    @Override
+    String getProblem() { return "VRP"; }
 }
