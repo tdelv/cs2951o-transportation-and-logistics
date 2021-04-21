@@ -32,6 +32,7 @@ public class Settings {
     // Rand Walk
     static double probRandWalk = 0.1;
     static double probRandWalkFactor = 0.95;
+    static double randMaxDist = 0.25;
 
     public static void print() {
         System.out.println("Settings:");
@@ -52,5 +53,6 @@ public class Settings {
         System.out.println("    rand walk:");
         System.out.println("      probRandWalk: " + probRandWalk);
         System.out.println("      probRandWalkFactor: " + probRandWalkFactor);
+        System.out.println("      randMaxDist: " + randMaxDist);
     }
 }
