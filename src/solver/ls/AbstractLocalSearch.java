@@ -34,7 +34,7 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
             // Take a random step
             if (dist == 1 && (Settings.rand.nextDouble() < probRandWalk)) {
                 if (Settings.verbosity >= 3) {
-                    System.out.println("Random step!" + best.getProblem());
+                    System.out.println("Random step! " + best.getProblem());
                 }
                 probRandWalk *= Settings.probRandWalkFactor;
                 current = (State) current.getRandom(Settings.rand.nextDouble() * Settings.randMaxDist);
