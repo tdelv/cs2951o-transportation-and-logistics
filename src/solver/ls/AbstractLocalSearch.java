@@ -39,7 +39,14 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
                     return min(current, best);
                 }
 
-                newCurrent = Optional.of(newCurrent.map((newCurr) -> min(newCurr, neighbor)).orElse(neighbor));
+                if (newCurrent.isPresent()) {
+                    newCurrent = Optional.of(min(newCurrent.get(), neighbor));
+                } else {
+                    if (lt(neighbor, current)) {
+                        newCurrent = Optional.of(neighbor);
+                    }
+                }
+
                 best = min(best, neighbor);
             }
 
