@@ -28,9 +28,9 @@ public class Main {
         Settings.vrpSearchDist = parser.switchIntegerValue("-vrpSearchDist", 3);
         Settings.vrpSearchTime = parser.switchDoubleValue("-vrpSearchTime", 30.0);
 
-        Settings.tspLimitBy = Settings.SearchLimit.valueOf(parser.switchValue("-tspLimitBy", "dist"));
+        Settings.tspLimitBy = Settings.SearchLimit.valueOf(parser.switchValue("-tspLimitBy", "both"));
         Settings.tspSearchDist = parser.switchIntegerValue("-tspSearchDist", 3);
-        Settings.tspSearchTime = parser.switchDoubleValue("-tspSearchTime", 3.0);
+        Settings.tspSearchTime = parser.switchDoubleValue("-tspSearchTime", 1.0);
 
         Settings.probRandWalk = parser.switchDoubleValue("-probRandWalk", 0.1);
         Settings.probRandWalkFactor = parser.switchDoubleValue("-probRandWalkFactor", 0.95);
