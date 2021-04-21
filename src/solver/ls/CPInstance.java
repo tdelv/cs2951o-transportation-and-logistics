@@ -74,7 +74,7 @@ public class CPInstance {
             if (Settings.cpReduceArrLength && allEmpty) {
                 numCustomers = Math.min(problem.maxCustomersPerVehicle, maxCustomersForVehicle);
             } else {
-                numCustomers = problem.maxCustomersPerVehicle;
+                numCustomers = problem.numCustomers;
             }
             totalVars += numCustomers;
             visitVehicleCustomer[v] = new IloIntVar[numCustomers];
