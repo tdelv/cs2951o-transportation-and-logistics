@@ -19,7 +19,7 @@ public class Settings {
     }
 
     // VRP
-    static SearchLimit vrpLimitBy = SearchLimit.dist;
+    static SearchLimit vrpLimitBy = SearchLimit.time;
     static int vrpSearchDist = 3;
     static double vrpSearchTime = 30.0;
 
