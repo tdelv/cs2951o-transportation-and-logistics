@@ -83,4 +83,8 @@ public class TSPState extends AbstractLocalSearchState<Double> {
         }
         System.out.println();
     }
+
+    @Override
+    String getProblem() { return "TSP"; }
 }
+

@@ -23,4 +23,6 @@ public abstract class AbstractLocalSearchState<T extends Comparable<T>> {
     abstract AbstractLocalSearchState<T> getRandom(double dist);
 
     abstract void print();
+
+    abstract String getProblem();
 }
