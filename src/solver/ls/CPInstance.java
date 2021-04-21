@@ -102,11 +102,13 @@ public class CPInstance {
         }
 
         // And that earlier trucks serve more customers
-        for (int v = 0; v < problem.numVehicles - 1; v++) {
-            for (int c = 0; c < visitVehicleCustomer[v + 1].length; c++) {
-                cp.add(cp.ifThen(
-                        cp.eq(visitVehicleCustomer[v][c], 0),
-                        cp.eq(visitVehicleCustomer[v + 1][c], 0)));
+        if (allEmpty) {
+            for (int v = 0; v < problem.numVehicles - 1; v++) {
+                for (int c = 0; c < visitVehicleCustomer[v + 1].length; c++) {
+                    cp.add(cp.ifThen(
+                            cp.eq(visitVehicleCustomer[v][c], 0),
+                            cp.eq(visitVehicleCustomer[v + 1][c], 0)));
+                }
             }
         }
 
