@@ -2,6 +2,13 @@ package solver.ls;
 
 public class Timer {
 
+    public static Timer totalTimer = new Timer();
+    public static Timer cpTimer = new Timer();
+    public static Timer lsTimer = new Timer();
+    public static Timer tspTimer = new Timer();
+    public static Timer tspGetValue = new Timer();
+    public static Timer tspGetNeighbors = new Timer();
+
     private long startTime;
     private long stopTime;
     private boolean running;
@@ -56,7 +63,13 @@ public class Timer {
     }
 
     public static void printTimers() {
-        System.out.println("Timers:");
+        System.out.println("Total time: " + totalTimer);
+        System.out.println("  CP feasible: " + cpTimer);
+        System.out.println("  LS search: " + lsTimer);
+        System.out.println("    TSP solve: " + tspTimer);
+        System.out.println("      TSP getValue: " + tspGetValue);
+        System.out.println("      TSP getNeighbors: " + tspGetNeighbors);
+
     }
 
     @Override

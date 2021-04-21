@@ -17,8 +17,9 @@ public class Solution {
     public Solution(VRPInstance problem, List<List<Integer>> paths, boolean isOptimal) {
         this.problem = problem;
         this.paths = paths;
-        this.isOptimal = false;
+        this.isOptimal = isOptimal;
         this.cost = Optional.empty();
+        this.isWellFormed = Optional.empty();
         this.isFeasible = Optional.empty();
     }
 
@@ -34,7 +35,7 @@ public class Solution {
         for (List<Integer> path : paths) {
             ret.append(" " + 0);
             for (int loc : path) {
-                ret.append(" " + loc);
+                ret.append(" ").append(loc);
             }
             ret.append(" " + 0);
         }
@@ -53,13 +54,13 @@ public class Solution {
                 for (int loc : path) {
                     double newX = problem.xCoordOfCustomer[loc];
                     double newY = problem.yCoordOfCustomer[loc];
-                    double dist = dist(x, y, newX, newY);
+                    double dist = Utils.dist(x, y, newX, newY);
 
                     cost += dist;
                     x = newX;
                     y = newY;
                 }
-                cost += dist(x, y, 0, 0);
+                cost += Utils.dist(x, y, 0, 0);
             }
 
             this.cost = Optional.of(cost);
@@ -75,8 +76,8 @@ public class Solution {
 
             isWellFormed &= paths.size() == problem.numVehicles;
 
-            Set<Integer> locs = new HashSet();
-            for (int i = 1; i < problem.numCustomers + 1; i ++) {
+            Set<Integer> locs = new HashSet<>();
+            for (int i = 1; i < problem.numCustomers; i ++) {
                 locs.add(i);
             }
             for (List<Integer> path : paths) {
@@ -118,9 +119,22 @@ public class Solution {
         }
     }
 
-    private static double dist(double x1, double y1, double x2, double y2) {
-        return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+    public List<List<Integer>> getPaths(boolean copy) {
+        if (copy) {
+            List<List<Integer>> paths = new ArrayList<>();
+
+            for (List<Integer> path : this.paths) {
+                paths.add(new ArrayList<>(path));
+            }
+
+            return paths;
+        } else {
+            return this.paths;
+        }
     }
 
+    public List<List<Integer>> getPaths() {
+        return getPaths(true);
+    }
 
 }

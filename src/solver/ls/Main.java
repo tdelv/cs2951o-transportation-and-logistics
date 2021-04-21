@@ -10,6 +10,7 @@ import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) {
+        System.out.println("TEST");
         if (args.length == 0) {
             System.out.println("Usage: java Main <file>");
             return;
@@ -20,6 +21,8 @@ public class Main {
         Settings.verbosity = parser.switchIntegerValue("-verbosity", 0);
         Settings.cpUseDistribute = parser.switchBooleanValue("-cpUseDistribute", false);
         Settings.cpReduceArrLength = parser.switchBooleanValue("-cpReduceArrLength", true);
+        Settings.vrpSearchDist = parser.switchIntegerValue("-vrpSearchDist", 3);
+        Settings.tspSearchDist = parser.switchIntegerValue("-tspSearchDist", 3);
         Settings.print();
 
         Path path = Paths.get(input);
@@ -27,7 +30,7 @@ public class Main {
         System.out.println("Instance: " + input);
 
         try {
-            Timer watch = new Timer();
+            Timer watch = Timer.totalTimer;
             watch.start();
             VRPInstance problem = new VRPInstance(input);
             Optional<Solution> solutionOpt = problem.solve();
@@ -35,10 +38,10 @@ public class Main {
 
             if (solutionOpt.isPresent()) {
                 Solution solution = solutionOpt.get();
-                if (Settings.verbosity > 0) {
-                    assert solution.isWellFormed() : "Solution not well formed: " + solution.toString();
-                    assert solution.isFeasible() : "Solution is not feasible: " + solution.toString();
-                }
+                assert solution.isWellFormed() : "Solution not well formed: " + solution.toString();
+                assert solution.isFeasible() : "Solution is not feasible: " + solution.toString();
+
+                Timer.printTimers();
 
                 System.out.println("Instance: " + filename +
                         " Time: " + watch +
@@ -54,7 +57,7 @@ public class Main {
             }
 
         } catch (IloException e) {
-            System.out.println("CPLEX error:" + e.getMessage());
+            System.out.println("CPLEX error: " + e.getMessage());
             if (Settings.verbosity > 0) {
                 e.printStackTrace();
             }

@@ -14,26 +14,42 @@ public class CPInstance {
 
     public CPInstance(VRPInstance problem) throws IloException {
         this.problem = problem;
-        this.cp = new IloCP();
+        this.cp = null;
     }
 
-    public Optional<Solution> solve() throws IloException {
-        ArrayList<Set<Integer>> setVars = new ArrayList<>();
+    private void refresh() {
+        if (this.cp != null) {
+            this.cp.end();
+        }
+        this.cp = new IloCP();
+        if (Settings.verbosity < 5) {
+            this.cp.setOut(null);
+        }
+    }
+
+    public Optional<Solution> getFeasible() throws IloException {
+        ArrayList<Set<Integer>> bins = new ArrayList<>();
         for (int v = 0; v < problem.numVehicles; v++) {
-            setVars.add(new HashSet<>());
+            bins.add(new HashSet<>());
         }
 
-        return solve(setVars);
+        Optional<Solution> feasible = solve(bins, false);
+
+        return feasible;
     }
 
-    public Optional<Solution> solve(ArrayList<Set<Integer>> setVars) throws IloException {
-        // Find inverted setVars
+    public Optional<Solution> solve(List<Set<Integer>> bins) throws IloException {
+        return this.solve(bins, true);
+    }
+
+    public Optional<Solution> solve(List<Set<Integer>> bins, boolean minimize) throws IloException {
+        refresh();
+        // Find inverted bins
         Set<Integer> unclaimedCustomers = new HashSet<Integer>();
-        unclaimedCustomers.add(0);
         for (int c = 1; c < problem.numCustomers; c++) {
             unclaimedCustomers.add(c);
             for (int v = 0; v < problem.numVehicles; v++) {
-                if (setVars.get(v).contains(c)) {
+                if (bins.get(v).contains(c)) {
                     unclaimedCustomers.remove(c);
                     break;
                 }
@@ -44,7 +60,8 @@ public class CPInstance {
         IloIntVar[][] visitVehicleCustomer = new IloIntVar[problem.numVehicles][];
         int totalVars = 0;
         for (int v = 0; v < problem.numVehicles; v++) {
-            Set<Integer> customers = new HashSet<>(setVars.get(v));
+            Set<Integer> customers = new HashSet<>(bins.get(v));
+            customers.add(0);
             customers.addAll(unclaimedCustomers);
             int[] customerArray = customers.stream()
                     .mapToInt(Integer::intValue)
@@ -63,10 +80,12 @@ public class CPInstance {
             }
         }
 
-        for (int v = 0; v < problem.numVehicles; v ++) {
-            System.out.println("Vehicle " + v + ":");
-            for (int c = 0; c < visitVehicleCustomer[v].length; c ++) {
-                System.out.println("  Customer " + c + ": " + visitVehicleCustomer[v][c]);
+        if (Settings.verbosity > 5) {
+            for (int v = 0; v < problem.numVehicles; v++) {
+                System.out.println("Vehicle " + v + ":");
+                for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
+                    System.out.println("  Customer " + c + ": " + visitVehicleCustomer[v][c]);
+                }
             }
         }
 
@@ -125,26 +144,28 @@ public class CPInstance {
         }
 
         // Find total distance traveled by trucks
-        IloNumExpr originX = cp.sum(cp.numExpr(), problem.xCoordOfCustomer[0]);
-        IloNumExpr originY = cp.sum(cp.numExpr(), problem.yCoordOfCustomer[0]);
-        IloNumExpr cost = cp.numExpr();
-        for (int v = 0; v < problem.numVehicles; v++) {
-            IloNumExpr x = originX;
-            IloNumExpr y = originY;
-            IloNumExpr dist = cp.numExpr();
-            for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
-                IloIntVar loc = visitVehicleCustomer[v][c];
-                IloNumExpr newX = cp.element(problem.xCoordOfCustomer, loc);
-                IloNumExpr newY = cp.element(problem.yCoordOfCustomer, loc);
+        if (minimize) {
+            IloNumExpr originX = cp.sum(cp.numExpr(), problem.xCoordOfCustomer[0]);
+            IloNumExpr originY = cp.sum(cp.numExpr(), problem.yCoordOfCustomer[0]);
+            IloNumExpr cost = cp.numExpr();
+            for (int v = 0; v < problem.numVehicles; v++) {
+                IloNumExpr x = originX;
+                IloNumExpr y = originY;
+                IloNumExpr dist = cp.numExpr();
+                for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
+                    IloIntVar loc = visitVehicleCustomer[v][c];
+                    IloNumExpr newX = cp.element(problem.xCoordOfCustomer, loc);
+                    IloNumExpr newY = cp.element(problem.yCoordOfCustomer, loc);
 
-                dist = cp.sum(dist, distance(x, y, newX, newY));
-                x = newX;
-                y = newY;
+                    dist = cp.sum(dist, distance(x, y, newX, newY));
+                    x = newX;
+                    y = newY;
+                }
+                dist = cp.sum(dist, distance(x, y, originX, originY));
+                cost = cp.sum(cost, dist);
             }
-            dist = cp.sum(dist, distance(x, y, originX, originY));
-            cost = cp.sum(cost, dist);
+            cp.addMinimize(cost);
         }
-        cp.addMinimize(cost);
 
         // Solves
         if (cp.solve()) {
@@ -160,7 +181,7 @@ public class CPInstance {
                 }
                 paths.add(path);
             }
-            return Optional.of(new Solution(problem, paths, true));
+            return Optional.of(new Solution(problem, paths));
         } else {
             return Optional.empty();
         }

@@ -47,9 +47,6 @@ public class VRPInstance {
             yCoordOfCustomer[i] = read.nextDouble();
         }
 
-        for (int i = 0; i < numCustomers; i++)
-            System.out.println(demandOfCustomer[i] + " " + xCoordOfCustomer[i] + " " + yCoordOfCustomer[i]);
-
         // Find maximum number of customers a vehicle can deliver
         int[] sortedDemands = Arrays.copyOf(demandOfCustomer, demandOfCustomer.length);
         Arrays.sort(sortedDemands);
@@ -66,6 +63,17 @@ public class VRPInstance {
 
     public Optional<Solution> solve() throws IloException {
         CPInstance cpInstance = new CPInstance(this);
-        return cpInstance.solve();
+        Timer.cpTimer.start();
+        Optional<Solution> feasible = cpInstance.getFeasible();
+        Timer.cpTimer.stop();
+        if (!feasible.isPresent()) {
+            return feasible;
+        }
+
+        LSInstance lsInstance = new LSInstance(this);
+        Timer.lsTimer.start();
+        Optional<Solution> solution = Optional.of(lsInstance.solve(feasible.get()));
+        Timer.lsTimer.stop();
+        return solution;
     }
 }
