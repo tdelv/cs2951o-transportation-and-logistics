@@ -19,7 +19,21 @@ public class TSPLocalSearch extends AbstractLocalSearch<Double, TSPState> {
         }
 
         Timer.tspTimer.start();
-        TSPState solution = this.search(Settings.tspSearchDist);
+        TSPState solution = null;
+        switch (Settings.tspLimitBy) {
+            case dist:
+                solution = this.search(Settings.tspSearchDist);
+                break;
+            case time:
+                solution = this.search(Settings.tspSearchTime);
+                break;
+            case both:
+                solution = this.search(Settings.tspSearchDist, Settings.tspSearchTime);
+                break;
+            default:
+                System.err.println("Unhandled tspLimitBy: " + Settings.tspLimitBy);
+                System.exit(1);
+        }
         Timer.tspTimer.stop();
         solved.put(bin, solution);
         return solution;

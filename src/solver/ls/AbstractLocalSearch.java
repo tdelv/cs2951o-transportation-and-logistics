@@ -22,12 +22,15 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
         State best = getInitial();
         State current = best;
 
+        double probRandWalk = Settings.probRandWalk;
+
         int dist = 1;
         Timer timer = new Timer();
         timer.start();
         while (!maxDist.isPresent() || dist <= maxDist.get()) {
             // Take a random step
-            if (dist == 1 && (Settings.rand.nextDouble() < Settings.probRandWalk)) {
+            if (dist == 1 && (Settings.rand.nextDouble() < probRandWalk)) {
+                probRandWalk *= Settings.probRandWalkFactor;
                 current = (State) current.getRandom(Settings.rand.nextDouble());
                 continue;
             }
