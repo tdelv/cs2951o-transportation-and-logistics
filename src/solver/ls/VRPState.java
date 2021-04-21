@@ -126,6 +126,9 @@ public class VRPState extends AbstractLocalSearchState<Double> {
             }
 
             for (int i = 0; i < trueDist; i ++) {
+                if (nonEmptyBins.isEmpty()) {
+                    break;
+                }
                 int binInd = Settings.rand.nextInt(nonEmptyBins.size());
                 Set<Integer> bin = nonEmptyBins.get(binInd);
                 int locInd = Settings.rand.nextInt(bin.size());
