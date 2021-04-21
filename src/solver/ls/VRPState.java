@@ -1,7 +1,12 @@
 package solver.ls;
 
+import ilog.concert.IloException;
+
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class VRPState extends AbstractLocalSearchState<Double> {
 
@@ -101,5 +106,41 @@ public class VRPState extends AbstractLocalSearchState<Double> {
     @Override
     boolean isValid() {
         return this.isFeasible();
+    }
+
+    @Override AbstractLocalSearchState<Double> getRandom(double dist) {
+        try {
+            CPInstance cpInstance = new CPInstance(problem);
+            List<Set<Integer>> bins = new ArrayList<>();
+            for (List<Integer> path : paths) {
+                bins.add(new HashSet<>(path));
+            }
+
+            int trueDist = (int) Math.ceil(dist * problem.numCustomers);
+
+            List<Set<Integer>> nonEmptyBins = new ArrayList<>(bins);
+            for (int i = nonEmptyBins.size() - 1; i >= 0; i --) {
+                if (nonEmptyBins.get(i).isEmpty()) {
+                    nonEmptyBins.remove(i);
+                }
+            }
+
+            for (int i = 0; i < trueDist; i ++) {
+                int binInd = Settings.rand.nextInt(nonEmptyBins.size());
+                Set<Integer> bin = nonEmptyBins.get(binInd);
+                int locInd = Settings.rand.nextInt(bin.size());
+                Integer remove = new ArrayList<>(bin).get(locInd);
+                bin.remove(remove);
+                if (bin.isEmpty()) {
+                    nonEmptyBins.remove(binInd);
+                }
+            }
+
+            Solution solution = cpInstance.solve(bins, false).get();
+            return new VRPState(problem, solution.getPaths());
+        } catch (IloException e) {
+            e.printStackTrace();
+            return this;
+        }
     }
 }

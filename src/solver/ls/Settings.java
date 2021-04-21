@@ -14,6 +14,7 @@ public class Settings {
     // LS
     static int vrpSearchDist = 3;
     static int tspSearchDist = 3;
+    static double probRandWalk = 0.1;
 
     public static void print() {
         System.out.println("Settings:");
@@ -24,5 +25,6 @@ public class Settings {
         System.out.println("  LS:");
         System.out.println("    vrpSearchDist: " + vrpSearchDist);
         System.out.println("    tspSearchDist: " + tspSearchDist);
+        System.out.println("    probRandWalk: " + probRandWalk);
     }
 }

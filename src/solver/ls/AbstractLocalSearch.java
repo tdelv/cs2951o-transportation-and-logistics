@@ -20,27 +20,31 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
 
     private State search(Optional<Integer> maxDist, Optional<Double> maxTime) {
         State best = getInitial();
+        State current = best;
 
         int dist = 1;
         Timer timer = new Timer();
         timer.start();
         while (!maxDist.isPresent() || dist <= maxDist.get()) {
-            T bestValue = best.getValueRemember();
-            Optional<State> newBest = Optional.empty();
-            for (State neighbor : getValidNeighbors(best, dist)) {
-                if (maxTime.isPresent() && timer.getCurrentTime() > maxTime.get()) {
-                    return newBest.orElse(best);
-                }
-                T neighborValue = neighbor.getValueRemember();
-                if (neighborValue.compareTo(bestValue) < 0) {
-                    if (!newBest.isPresent() || neighborValue.compareTo(newBest.get().getValueRemember()) < 0) {
-                        newBest = Optional.of(neighbor);
-                    }
-                }
+            // Take a random step
+            if (dist == 1 && (Settings.rand.nextDouble() < Settings.probRandWalk)) {
+                current = (State) current.getRandom(Settings.rand.nextDouble());
+                continue;
             }
 
-            if (newBest.isPresent()) {
-                best = newBest.get();
+            Optional<State> newCurrent = Optional.empty();
+            for (State neighbor : getValidNeighbors(current, dist)) {
+                if (maxTime.isPresent() && timer.getCurrentTime() > maxTime.get()) {
+                    current = newCurrent.orElse(current);
+                    return min(current, best);
+                }
+
+                newCurrent = Optional.of(newCurrent.map((newCurr) -> min(newCurr, neighbor)).orElse(neighbor));
+                best = min(best, neighbor);
+            }
+
+            if (newCurrent.isPresent()) {
+                current = newCurrent.get();
                 dist = 1;
             } else {
                 dist += 1;
@@ -48,6 +52,14 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
         }
 
         return best;
+    }
+
+    private boolean lt(State s1, State s2) {
+        return s1.getValueRemember().compareTo(s2.getValueRemember()) < 0;
+    }
+
+    private State min(State s1, State s2) {
+        return lt(s1, s2) ? s1 : s2;
     }
 
     private Generator<State> getNeighbors(State state, int dist) {

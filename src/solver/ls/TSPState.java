@@ -57,4 +57,21 @@ public class TSPState extends AbstractLocalSearchState<Double> {
     boolean isValid() {
         return true;
     }
+
+    @Override
+    AbstractLocalSearchState<Double> getRandom(double dist) {
+        int trueDist = (int) Math.ceil(dist * order.size());
+
+        List<Integer> newOrder = new ArrayList<>(order);
+
+        for (int i = 0; i < trueDist; i ++) {
+            int ind0 = Settings.rand.nextInt(newOrder.size());
+            int ind1 = Settings.rand.nextInt(newOrder.size());
+            Integer temp = newOrder.get(ind0);
+            newOrder.set(ind0, newOrder.get(ind1));
+            newOrder.set(ind1, temp);
+        }
+
+        return new TSPState(problem, newOrder);
+    }
 }
