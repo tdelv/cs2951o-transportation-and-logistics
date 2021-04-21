@@ -41,6 +41,12 @@ public class CPInstance {
 
     public Optional<Solution> solve(List<Set<Integer>> bins, boolean minimize) throws IloException {
         start();
+        // Check if bins all empty
+        boolean allEmpty = true;
+        for (Set<Integer> bin : bins) {
+            allEmpty &= bin.isEmpty();
+        }
+
         // Find inverted bins
         Set<Integer> unclaimedCustomers = new HashSet<Integer>();
         for (int c = 1; c < problem.numCustomers; c++) {
@@ -65,7 +71,7 @@ public class CPInstance {
                     .toArray();
             int maxCustomersForVehicle = problem.numCustomers / (v + 1);
             int numCustomers;
-            if (Settings.cpReduceArrLength) {
+            if (Settings.cpReduceArrLength && allEmpty) {
                 numCustomers = Math.min(problem.maxCustomersPerVehicle, maxCustomersForVehicle);
             } else {
                 numCustomers = problem.maxCustomersPerVehicle;
@@ -77,7 +83,7 @@ public class CPInstance {
             }
         }
 
-        if (Settings.verbosity >= 0) {
+        if (Settings.verbosity >= 5) {
             for (int v = 0; v < problem.numVehicles; v++) {
                 System.out.println("Vehicle " + v + ":");
                 for (int c = 0; c < visitVehicleCustomer[v].length; c++) {

@@ -136,9 +136,6 @@ public class VRPState extends AbstractLocalSearchState<Double> {
                 }
             }
 
-            bins.sort(Comparator.comparingInt(Set::size));
-            Collections.reverse(bins);
-
             System.out.println("Start VRP CP");
             Solution solution = cpInstance.solve(bins, false).get();
             System.out.println("End VRP CP");
