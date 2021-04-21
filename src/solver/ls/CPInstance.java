@@ -17,10 +17,7 @@ public class CPInstance {
         this.cp = null;
     }
 
-    private void refresh() {
-        if (this.cp != null) {
-            this.cp.end();
-        }
+    private void start() {
         this.cp = new IloCP();
         if (Settings.verbosity < 5) {
             this.cp.setOut(null);
@@ -43,7 +40,7 @@ public class CPInstance {
     }
 
     public Optional<Solution> solve(List<Set<Integer>> bins, boolean minimize) throws IloException {
-        refresh();
+        start();
         // Find inverted bins
         Set<Integer> unclaimedCustomers = new HashSet<Integer>();
         for (int c = 1; c < problem.numCustomers; c++) {
@@ -181,8 +178,10 @@ public class CPInstance {
                 }
                 paths.add(path);
             }
+            cp.end();
             return Optional.of(new Solution(problem, paths));
         } else {
+            cp.end();
             return Optional.empty();
         }
     }
