@@ -28,6 +28,9 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
         Timer timer = new Timer();
         timer.start();
         while (!maxDist.isPresent() || dist <= maxDist.get()) {
+            if (Settings.verbosity > 3) {
+                current.print();
+            }
             // Take a random step
             if (dist == 1 && (Settings.rand.nextDouble() < probRandWalk)) {
                 probRandWalk *= Settings.probRandWalkFactor;

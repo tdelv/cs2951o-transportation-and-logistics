@@ -74,4 +74,13 @@ public class TSPState extends AbstractLocalSearchState<Double> {
 
         return new TSPState(problem, newOrder);
     }
+
+    @Override
+    void print() {
+        System.out.print("TSPState:");
+        for (Integer loc : order) {
+            System.out.print(" " + loc);
+        }
+        System.out.println();
+    }
 }
