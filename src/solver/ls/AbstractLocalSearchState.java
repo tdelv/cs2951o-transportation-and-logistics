@@ -21,4 +21,6 @@ public abstract class AbstractLocalSearchState<T extends Comparable<T>> {
     abstract boolean isValid();
 
     abstract AbstractLocalSearchState<T> getRandom(double dist);
+
+    abstract void print();
 }
