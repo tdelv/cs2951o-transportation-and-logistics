@@ -3,10 +3,7 @@ package solver.ls;
 import ilog.concert.IloException;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class VRPState extends AbstractLocalSearchState<Double> {
 
@@ -138,6 +135,9 @@ public class VRPState extends AbstractLocalSearchState<Double> {
                     nonEmptyBins.remove(binInd);
                 }
             }
+
+            bins.sort(Comparator.comparingInt(Set::size));
+            Collections.reverse(bins);
 
             Solution solution = cpInstance.solve(bins, false).get();
             return new VRPState(problem, solution.getPaths());
