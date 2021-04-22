@@ -87,10 +87,49 @@ public class CPInstance {
 
         // Enforce that zeroes only appear as tail of sequence
         for (int v = 0; v < problem.numVehicles; v++) {
+            IloIntExpr vehicleQuadrant = cp.element(problem.quadrantOfCustomer, visitVehicleCustomer[v][0]);
             for (int c = 0; c < visitVehicleCustomer[v].length - 1; c++) {
                 cp.add(cp.ifThen(
                         cp.eq(visitVehicleCustomer[v][c], 0),
                         cp.eq(visitVehicleCustomer[v][c + 1], 0)));
+
+//                cp.add(cp.ifThen(cp.neq(visitVehicleCustomer[v][c + 1], 0),
+//                        cp.eq(
+//                        cp.element(problem.quadrantOfCustomer, visitVehicleCustomer[v][c]),
+//                        cp.element(problem.quadrantOfCustomer, visitVehicleCustomer[v][c+1]) )));
+
+                cp.add(cp.ifThen(cp.and(
+                            cp.neq(visitVehicleCustomer[v][c], 0), cp.eq(1, vehicleQuadrant)),
+                        cp.and(
+                            cp.ge(
+                                cp.element(problem.quadrantOfCustomer, visitVehicleCustomer[v][c]),
+                                vehicleQuadrant),
+                            cp.le(
+                                cp.element(problem.quadrantOfCustomer, visitVehicleCustomer[v][c]),
+                                2 )
+                            )));
+
+                cp.add(cp.ifThen(cp.and(
+                        cp.neq(visitVehicleCustomer[v][c], 0), cp.eq(2, vehicleQuadrant)),
+                        cp.and(
+                                cp.ge(
+                                        cp.element(problem.quadrantOfCustomer, visitVehicleCustomer[v][c]),
+                                        vehicleQuadrant ),
+                                cp.le(
+                                        cp.element(problem.quadrantOfCustomer, visitVehicleCustomer[v][c]),
+                                        3 )
+                        )));
+
+                cp.add(cp.ifThen(cp.and(
+                        cp.neq(visitVehicleCustomer[v][c], 0), cp.eq(3, vehicleQuadrant)),
+                        cp.and(
+                                cp.ge(
+                                        cp.element(problem.quadrantOfCustomer, visitVehicleCustomer[v][c]),
+                                        vehicleQuadrant ),
+                                cp.le(
+                                        cp.element(problem.quadrantOfCustomer, visitVehicleCustomer[v][c]),
+                                        4 )
+                        )));
             }
         }
 

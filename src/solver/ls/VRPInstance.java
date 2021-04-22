@@ -61,31 +61,35 @@ public class VRPInstance {
             }
             maxCustomersPerVehicle++;
         }
+
+        quadrantOfCustomer = new int[numCustomers];
+        this.setUpQuadrants();
     }
 
     public Optional<Solution> solve() throws IloException {
         CPInstance cpInstance = new CPInstance(this);
         Timer.cpTimer.start();
         Optional<Solution> feasible = cpInstance.getFeasible();
-        Timer.cpTimer.stop();
-        if (!feasible.isPresent()) {
-            return feasible;
-        }
-        if (Settings.verbosity >= 1) {
-            System.out.println("Initial feasibility cost: " + feasible.get().getCost());
-        }
-
-        LSInstance lsInstance = new LSInstance(this);
-        Timer.lsTimer.start();
-        Optional<Solution> solution = Optional.of(lsInstance.solve(feasible.get()));
-        Timer.lsTimer.stop();
-        return solution;
+        return feasible;
+//        Timer.cpTimer.stop();
+//        if (!feasible.isPresent()) {
+//            return feasible;
+//        }
+//        if (Settings.verbosity >= 1) {
+//            System.out.println("Initial feasibility cost: " + feasible.get().getCost());
+//        }
+//
+//        LSInstance lsInstance = new LSInstance(this);
+//        Timer.lsTimer.start();
+//        Optional<Solution> solution = Optional.of(lsInstance.solve(feasible.get()));
+//        Timer.lsTimer.stop();
+//        return solution;
     }
 
     private void setUpQuadrants() {
         for (int c = 0; c < numCustomers; c ++) {
-            double custX = xCoordOfCustomer[c];
-            double custY = yCoordOfCustomer[c];
+            double custX = xCoordOfCustomer[c] - xCoordOfCustomer[0];
+            double custY = yCoordOfCustomer[c] - yCoordOfCustomer[0];
 
             if ((custX >= 0) && (custY >= 0)) {
                 quadrantOfCustomer[c] = 1;
