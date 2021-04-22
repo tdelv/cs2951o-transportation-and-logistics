@@ -34,7 +34,7 @@ public class Main {
 
         Settings.probRandWalk = parser.switchDoubleValue("-probRandWalk", 0.1);
         Settings.probRandWalkFactor = parser.switchDoubleValue("-probRandWalkFactor", 0.95);
-        Settings.randMaxDist = parser.switchDoubleValue("-randMaxDist", 0.25);
+        Settings.randMaxDist = parser.switchDoubleValue("-randMaxDist", 0.6);
 
         Settings.print();
 

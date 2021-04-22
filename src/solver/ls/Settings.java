@@ -32,7 +32,7 @@ public class Settings {
     // Rand Walk
     static double probRandWalk = 0.1;
     static double probRandWalkFactor = 0.95;
-    static double randMaxDist = 0.25;
+    static double randMaxDist = 0.6;
 
     public static void print() {
         System.out.println("Settings:");

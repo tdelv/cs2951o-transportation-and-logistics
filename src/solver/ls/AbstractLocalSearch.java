@@ -23,6 +23,7 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
         State current = best;
 
         double probRandWalk = Settings.probRandWalk;
+        double randMaxDist = Settings.randMaxDist;
 
         int dist = 1;
         Timer timer = new Timer();
@@ -36,8 +37,9 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
                 if (Settings.verbosity >= 3) {
                     System.out.println("Random step! " + best.getProblem());
                 }
+                current = (State) current.getRandom(Settings.rand.nextDouble() * randMaxDist);
+                randMaxDist *= Settings.probRandWalkFactor;
                 probRandWalk *= Settings.probRandWalkFactor;
-                current = (State) current.getRandom(Settings.rand.nextDouble() * Settings.randMaxDist);
                 continue;
             }
 
