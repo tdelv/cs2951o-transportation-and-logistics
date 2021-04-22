@@ -67,7 +67,7 @@ public class VRPInstance {
     }
 
     public Optional<Solution> solve() throws IloException {
-        CPInstance cpInstance = new CPInstance(this);
+        CPInstance cpInstance = CPInstance.getInstance(this);
         Timer.cpTimer.start();
         Optional<Solution> feasible = cpInstance.getFeasible();
         Timer.cpTimer.stop();

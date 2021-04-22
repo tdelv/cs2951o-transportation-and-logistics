@@ -111,7 +111,7 @@ public class VRPState extends AbstractLocalSearchState<Double> {
 
     @Override AbstractLocalSearchState<Double> getRandom(double dist) {
         try {
-            CPInstance cpInstance = new CPInstance(problem);
+            CPInstance cpInstance = CPInstance.getInstance(problem);
             List<List<Integer>> bins = Utils.doubleClone(paths);
 
             int trueDist = (int) Math.ceil(dist * problem.numCustomers);

@@ -6,19 +6,30 @@ import ilog.cp.IloCP;
 import java.util.*;
 
 public class CPInstance {
-    private static Map<VRPInstance, CPInstance> cpInstances;
+    private static Map<VRPInstance, CPInstance> cpInstances = new HashMap<>();
     private VRPInstance problem;
     private IloCP cp;
 
 
 
-    public CPInstance(VRPInstance problem) throws IloException {
+    private CPInstance(VRPInstance problem) {
         this.problem = problem;
         this.cp = null;
     }
 
-    private void start() {
+    public static CPInstance getInstance(VRPInstance problem) {
+        if (cpInstances.containsKey(problem)) {
+            return cpInstances.get(problem);
+        }
+
+        CPInstance cpInstance = new CPInstance(problem);
+        cpInstances.put(problem, cpInstance);
+        return cpInstance;
+    }
+
+    private void start() throws IloException {
         this.cp = new IloCP();
+        this.cp.setParameter(IloCP.IntParam.RandomSeed, Settings.rand.nextInt(100));
         if (Settings.verbosity < 5) {
             this.cp.setOut(null);
         }
