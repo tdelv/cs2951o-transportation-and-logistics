@@ -304,7 +304,7 @@ public class CPInstance {
 
                 IloNumVar customerSparsity = cp.numVar(0,1000000);
 
-                double customerPairDistance = Math.sqrt(Math.pow(
+                int customerPairDistance = (int) Math.sqrt(Math.pow(
                         problem.xCoordOfCustomer[c1] - problem.xCoordOfCustomer[c2], 2)
                 + Math.pow(problem.yCoordOfCustomer[c1]-problem.yCoordOfCustomer[c2], 2));
 
@@ -322,15 +322,6 @@ public class CPInstance {
 //        cp.add(cp.le(wanderingTrucks, 4000));
 
         cp.setParameter(IloCP.DoubleParam.TimeLimit, 15);
-
-//        for (int v = 0; v < problem.numVehicles; v++) {
-//            IloIntExpr vehicleNumber = cp.sum(cp.intExpr(),v);
-//            IloIntExpr customersWithVehicle = cp.intExpr();
-//            for (int c = 0; c < problem.numCustomers-1; c++) {
-//                IloIntExpr customerInVehicle = cp.intExpr();
-//                cp.ifThen(cu)
-//            }
-//        }
 
         // Solves
         Optional<Solution> result;

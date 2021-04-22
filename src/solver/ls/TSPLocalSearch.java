@@ -68,7 +68,10 @@ public class TSPLocalSearch extends AbstractLocalSearch<Double, TSPState> {
         Set<Integer> toVisit = new HashSet<>(locations);
         double currX = problem.xCoordOfCustomer[0];
         double currY = problem.yCoordOfCustomer[0];
+        double currXBackwards = problem.xCoordOfCustomer[0];
+        double currYBackwards = problem.yCoordOfCustomer[0];
         List<Integer> path = new ArrayList<>();
+        List<Integer> pathBackwards = new ArrayList<>();
         while (!toVisit.isEmpty()) {
             Optional<Integer> best = Optional.empty();
             Optional<Double> bestDist = Optional.empty();
@@ -84,7 +87,31 @@ public class TSPLocalSearch extends AbstractLocalSearch<Double, TSPState> {
             toVisit.remove(best.get());
             currX = problem.xCoordOfCustomer[best.get()];
             currY = problem.yCoordOfCustomer[best.get()];
+
+            // 2nd tail end
+            if (!toVisit.isEmpty()) {
+                Optional<Integer> best2 = Optional.empty();
+                Optional<Double> bestDist2 = Optional.empty();
+                for (Integer next2 : toVisit) {
+                    double dist2 = Utils.dist(currXBackwards, currYBackwards,
+                            problem.xCoordOfCustomer[next2], problem.yCoordOfCustomer[next2]);
+                    if (!bestDist2.isPresent() || dist2 <bestDist.get()) {
+                        best2 = Optional.of(next2);
+                        bestDist2 = Optional.of(dist2);
+                    }
+                }
+
+                pathBackwards.add(best2.get());
+                toVisit.remove(best2.get());
+                currXBackwards = problem.xCoordOfCustomer[best2.get()];
+                currYBackwards = problem.yCoordOfCustomer[best2.get()];
+            }
         }
+        // Rejoin paths
+        for (int i = pathBackwards.size() - 1; i >= 0; i--) {
+            path.add(pathBackwards.get(i));
+        }
+
         return new TSPState(problem, path);
     }
 }
