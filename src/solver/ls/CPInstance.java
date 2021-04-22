@@ -73,7 +73,7 @@ public class CPInstance {
                 numCustomers = numToClaim;
             }
             totalVars += numCustomers;
-            visitVehicleCustomer[v] = cp.intVarArray(numCustomers, customerArray, "");
+            visitVehicleCustomer[v] = cp.intVarArray(numCustomers, customerArray, "vehicle" + v);
         }
 
         if (Settings.verbosity >= 5) {
@@ -115,10 +115,12 @@ public class CPInstance {
         }
 
         // Enforce that every unclaimed customer appears exactly once (and 0 fills the rest)
-        for (int c = 0; c < customerArray.length - 1; c ++) {
-            cp.add(cp.eq(cp.count(allVars, customerArray[c]), 1));
+        for (int c = 0; c < customerArray.length; c ++) {
+            if (customerArray[c] != 0) {
+                cp.add(cp.eq(cp.count(allVars, customerArray[c]), 1));
+            }
         }
-        cp.add(cp.eq(cp.count(allVars, 0), (numToClaim * problem.numVehicles) - numToClaim));
+        cp.add(cp.eq(cp.count(allVars, 0), totalVars - numToClaim));
 
         // Enforces vehicle capacity limit
         for (int v = 0; v < problem.numVehicles; v ++) {
