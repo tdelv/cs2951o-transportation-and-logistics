@@ -19,6 +19,37 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
     }
 
     private State search(Optional<Integer> maxDist, Optional<Double> maxTime) {
+        if (Settings.lsSearchProcedural) {
+            return searchProcedural(maxDist, maxTime);
+        } else {
+            return searchRandom(maxDist, maxTime);
+        }
+    }
+
+    private State searchRandom(Optional<Integer> maxDist, Optional<Double> maxTime) {
+        State best = getInitial();
+        State current = best;
+
+        double probRandWalk = Settings.probRandWalk;
+
+        Timer timer = new Timer();
+        timer.start();
+        int count = 0;
+        while ((!maxDist.isPresent() || count++ <= maxDist.get()) && (!maxTime.isPresent() || timer.getCurrentTime() < maxTime.get())) {
+            State next = (State) current.getRandom(Settings.rand.nextDouble() * Settings.randMaxDist);
+            if (lt(next, current)) {
+                current = next;
+                best = min(best, next);
+            } else if (Settings.rand.nextDouble() < probRandWalk) {
+                probRandWalk *= Settings.probRandWalkFactor;
+                current = next;
+            }
+        }
+
+        return best;
+    }
+
+    private State searchProcedural(Optional<Integer> maxDist, Optional<Double> maxTime) {
         State best = getInitial();
         State current = best;
 

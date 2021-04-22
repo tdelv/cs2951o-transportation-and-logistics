@@ -19,16 +19,15 @@ public class Main {
         CliArgs parser = new CliArgs(args);
         String input = parser.arg(0);
         Settings.verbosity = parser.switchIntegerValue("-verbosity", 0);
-        Settings.cpUseDistribute = parser.switchBooleanValue("-cpUseDistribute", false);
-        Settings.cpReduceArrLength = parser.switchBooleanValue("-cpReduceArrLength", true);
 
         Settings.lsTakeFirst = parser.switchBooleanValue("-lsTakeFirst", true);
+        Settings.lsSearchProcedural = parser.switchBooleanValue("-lsSearchProcedural", false);
 
         Settings.vrpLimitBy = Settings.SearchLimit.valueOf(parser.switchValue("-vrpLimitBy", "time"));
         Settings.vrpSearchDist = parser.switchIntegerValue("-vrpSearchDist", 3);
         Settings.vrpSearchTime = parser.switchDoubleValue("-vrpSearchTime", 30.0);
 
-        Settings.tspLocalSearch = parser.switchBooleanValue("-tspLocalSearch", false);
+        Settings.tspSearch = Settings.TSPSearch.valueOf(parser.switchValue("-tspSearch", "nearestNeighbor"));
         Settings.tspLimitBy = Settings.SearchLimit.valueOf(parser.switchValue("-tspLimitBy", "both"));
         Settings.tspSearchDist = parser.switchIntegerValue("-tspSearchDist", 3);
         Settings.tspSearchTime = parser.switchDoubleValue("-tspSearchTime", 1.0);
