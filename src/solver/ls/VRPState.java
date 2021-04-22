@@ -110,14 +110,11 @@ public class VRPState extends AbstractLocalSearchState<Double> {
     @Override AbstractLocalSearchState<Double> getRandom(double dist) {
         try {
             CPInstance cpInstance = new CPInstance(problem);
-            List<Set<Integer>> bins = new ArrayList<>();
-            for (List<Integer> path : paths) {
-                bins.add(new HashSet<>(path));
-            }
+            List<List<Integer>> bins = Utils.doubleClone(paths);
 
             int trueDist = (int) Math.ceil(dist * problem.numCustomers);
 
-            List<Set<Integer>> nonEmptyBins = new ArrayList<>(bins);
+            List<List<Integer>> nonEmptyBins = new ArrayList<>(bins);
             for (int i = nonEmptyBins.size() - 1; i >= 0; i --) {
                 if (nonEmptyBins.get(i).isEmpty()) {
                     nonEmptyBins.remove(i);
@@ -129,9 +126,9 @@ public class VRPState extends AbstractLocalSearchState<Double> {
                     break;
                 }
                 int binInd = Settings.rand.nextInt(nonEmptyBins.size());
-                Set<Integer> bin = nonEmptyBins.get(binInd);
+                List<Integer> bin = nonEmptyBins.get(binInd);
                 int locInd = Settings.rand.nextInt(bin.size());
-                Integer remove = new ArrayList<>(bin).get(locInd);
+                Integer remove = bin.get(locInd);
                 bin.remove(remove);
                 if (bin.isEmpty()) {
                     nonEmptyBins.remove(binInd);

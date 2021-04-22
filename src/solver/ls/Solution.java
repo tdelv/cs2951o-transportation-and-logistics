@@ -35,7 +35,7 @@ public class Solution {
         for (List<Integer> path : paths) {
             ret.append(" " + 0);
             for (int loc : path) {
-                ret.append(" ").append(loc);
+                ret.append(" " + loc);
             }
             ret.append(" " + 0);
         }
@@ -100,6 +100,7 @@ public class Solution {
         if (this.isFeasible.isPresent()) {
             return this.isFeasible.get();
         } else {
+            assert this.isWellFormed() : "Should not be checking feasibility of non-wellformed solution";
             boolean isFeasible = true;
 
             for (List<Integer> path : paths) {
