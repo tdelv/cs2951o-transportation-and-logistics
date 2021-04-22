@@ -55,4 +55,10 @@ public class Settings {
         System.out.println("      probRandWalkFactor: " + probRandWalkFactor);
         System.out.println("      randMaxDist: " + randMaxDist);
     }
+
+    public static void debug(int priority, String message) {
+        if (Settings.verbosity >= priority) {
+            System.out.println(message);
+        }
+    }
 }
