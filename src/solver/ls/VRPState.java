@@ -138,7 +138,7 @@ public class VRPState extends AbstractLocalSearchState<Double> {
             assert this.isFeasible() : "getRandom should only be called on feasible states.";
 
             System.out.println("Start VRP CP");
-            Solution solution = cpInstance.solve(bins, false).get();
+            Solution solution = cpInstance.solve(bins).get();
             System.out.println("End VRP CP");
             return new VRPState(problem, solution.getPaths());
         } catch (IloException e) {

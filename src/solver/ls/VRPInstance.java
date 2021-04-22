@@ -70,20 +70,19 @@ public class VRPInstance {
         CPInstance cpInstance = new CPInstance(this);
         Timer.cpTimer.start();
         Optional<Solution> feasible = cpInstance.getFeasible();
-        return feasible;
-//        Timer.cpTimer.stop();
-//        if (!feasible.isPresent()) {
-//            return feasible;
-//        }
-//        if (Settings.verbosity >= 1) {
-//            System.out.println("Initial feasibility cost: " + feasible.get().getCost());
-//        }
-//
-//        LSInstance lsInstance = new LSInstance(this);
-//        Timer.lsTimer.start();
-//        Optional<Solution> solution = Optional.of(lsInstance.solve(feasible.get()));
-//        Timer.lsTimer.stop();
-//        return solution;
+        Timer.cpTimer.stop();
+        if (!feasible.isPresent()) {
+            return feasible;
+        }
+        if (Settings.verbosity >= 1) {
+            System.out.println("Initial feasibility cost: " + feasible.get().getCost());
+        }
+
+        LSInstance lsInstance = new LSInstance(this);
+        Timer.lsTimer.start();
+        Optional<Solution> solution = Optional.of(lsInstance.solve(feasible.get()));
+        Timer.lsTimer.stop();
+        return solution;
     }
 
     private void setUpQuadrants() {
