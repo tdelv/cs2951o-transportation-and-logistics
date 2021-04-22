@@ -282,25 +282,43 @@ public class CPInstance {
         IloConstraint pack = cp.pack(vehicleLoads, whichVehicle, demand);
         cp.add(pack);
 
-        IloIntExpr wanderingTrucks = cp.intExpr();
+        IloNumExpr wanderingTrucks = cp.numExpr();
 
         for (int c1 = 1; c1 < problem.numCustomers; c1 ++) {
             for (int c2 = c1; c2 < problem.numCustomers; c2 ++) {
-                if (problem.quadrantOfCustomer[c1] != problem.quadrantOfCustomer[c2]){
-                    IloIntVar truckIsWandering = cp.intVar(0,1);
+//                if (problem.quadrantOfCustomer[c1] != problem.quadrantOfCustomer[c2]){
+//                    IloNumVar truckIsWandering = cp.numVar(0,1);
+//
+//                    cp.add(cp.ifThenElse(
+//                            cp.eq(whichVehicle[c1-1], whichVehicle[c2-1]),
+//                            cp.eq(truckIsWandering, 1),
+//                            cp.eq(truckIsWandering, 0)));
+//
+//                    cp.add(cp.ifThenElse(
+//                            cp.eq(whichVehicle[c1-1], whichVehicle[c2-1]),
+//                            cp.eq(truckIsWandering, 1),
+//                            cp.eq(truckIsWandering, 0)));
+//
+//                    wanderingTrucks = cp.sum(wanderingTrucks, truckIsWandering);
+//                }
 
-                    cp.add(cp.ifThenElse(
-                            cp.eq(whichVehicle[c1-1], whichVehicle[c2-1]),
-                            cp.eq(truckIsWandering, 1),
-                            cp.eq(truckIsWandering, 0)));
+                IloNumVar customerSparsity = cp.numVar(0,1000000);
 
-                    wanderingTrucks = cp.sum(wanderingTrucks, truckIsWandering);
-                }
+                double customerPairDistance = Math.sqrt(Math.pow(
+                        problem.xCoordOfCustomer[c1] - problem.xCoordOfCustomer[c2], 2)
+                + Math.pow(problem.yCoordOfCustomer[c1]-problem.yCoordOfCustomer[c2], 2));
+
+                cp.add(cp.ifThenElse(
+                        cp.eq(whichVehicle[c1-1], whichVehicle[c2-1]),
+                        cp.eq(customerSparsity, customerPairDistance),
+                        cp.eq(customerSparsity, 0)));
+
+                wanderingTrucks = cp.sum(wanderingTrucks, customerSparsity);
 
             }
         }
 
-//        cp.add(cp.minimize(wanderingTrucks));
+        cp.add(cp.minimize(wanderingTrucks));
 //        cp.add(cp.le(wanderingTrucks, 4000));
 
         cp.setParameter(IloCP.DoubleParam.TimeLimit, 15);
