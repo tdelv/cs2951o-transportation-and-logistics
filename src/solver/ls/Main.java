@@ -19,6 +19,7 @@ public class Main {
         CliArgs parser = new CliArgs(args);
         String input = parser.arg(0);
         Settings.verbosity = parser.switchIntegerValue("-verbosity", 0);
+        Settings.feasibilityOnly = parser.switchBooleanValue("-feasibilityOnly", false);
         Settings.cpUseDistribute = parser.switchBooleanValue("-cpUseDistribute", false);
         Settings.cpReduceArrLength = parser.switchBooleanValue("-cpReduceArrLength", true);
 
@@ -28,6 +29,7 @@ public class Main {
         Settings.vrpSearchDist = parser.switchIntegerValue("-vrpSearchDist", 3);
         Settings.vrpSearchTime = parser.switchDoubleValue("-vrpSearchTime", 30.0);
 
+        Settings.tspLocalSearch = parser.switchBooleanValue("-tspLocalSearch", false);
         Settings.tspLimitBy = Settings.SearchLimit.valueOf(parser.switchValue("-tspLimitBy", "both"));
         Settings.tspSearchDist = parser.switchIntegerValue("-tspSearchDist", 3);
         Settings.tspSearchTime = parser.switchDoubleValue("-tspSearchTime", 1.0);

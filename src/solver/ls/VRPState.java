@@ -2,7 +2,6 @@ package solver.ls;
 
 import ilog.concert.IloException;
 
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class VRPState extends AbstractLocalSearchState<Double> {
@@ -35,10 +34,13 @@ public class VRPState extends AbstractLocalSearchState<Double> {
     }
 
     @Override
-    Double getValue() {
+    Double getValue(Optional<Double> prevBest) {
         double totalCost = 0;
         System.out.println("getValue VRP");
-        for (int i = 0; i < paths.size(); i ++) {
+        for (int i = 0; i < paths.size(); i++) {
+            if (prevBest.isPresent() && totalCost > prevBest.get()) {
+                break;
+            }
             System.out.println("  solve " + (i + 1) + " / " + paths.size());
             TSPLocalSearch tspLS = new TSPLocalSearch(problem, paths.get(i));
             TSPState best = tspLS.solve();
@@ -138,7 +140,9 @@ public class VRPState extends AbstractLocalSearchState<Double> {
             assert this.isFeasible() : "getRandom should only be called on feasible states.";
 
             System.out.println("Start VRP CP");
-            Solution solution = cpInstance.solve(bins).get();
+
+            Solution solution = cpInstance.solveBin(bins).get();
+
             System.out.println("End VRP CP");
             return new VRPState(problem, solution.getPaths());
         } catch (IloException e) {
@@ -149,7 +153,7 @@ public class VRPState extends AbstractLocalSearchState<Double> {
 
     @Override
     void print() {
-        System.out.println("VRPState: " + this.getValue());
+        System.out.println("VRPState: " + this.getValueRemember());
         for (List<Integer> path : paths) {
             System.out.print(" ");
             for (Integer loc : path) {

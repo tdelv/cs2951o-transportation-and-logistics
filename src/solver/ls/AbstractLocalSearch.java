@@ -52,6 +52,7 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
                     return min(current, best);
                 }
 
+                neighbor.getValueRemember(current.getValueRemember());
                 if (newCurrent.isPresent()) {
                     newCurrent = Optional.of(min(newCurrent.get(), neighbor));
                 } else {

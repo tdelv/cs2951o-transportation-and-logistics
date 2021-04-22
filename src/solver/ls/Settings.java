@@ -6,6 +6,7 @@ public class Settings {
     // Overall
     static Random rand = new Random(0);
     static int verbosity = 0;
+    static boolean feasibilityOnly = false;
 
     // CP
     static boolean cpUseDistribute = false;
@@ -25,6 +26,7 @@ public class Settings {
     static double vrpSearchTime = 30.0;
 
     // TSP
+    static boolean tspLocalSearch = false;
     static SearchLimit tspLimitBy = SearchLimit.both;
     static int tspSearchDist = 3;
     static double tspSearchTime = 1.0;
@@ -37,6 +39,7 @@ public class Settings {
     public static void print() {
         System.out.println("Settings:");
         System.out.println("  Verbosity: " + verbosity);
+        System.out.println("  Check feasibility only: " + feasibilityOnly);
         System.out.println("  CP:");
         System.out.println("    cpUseDistribute: " + cpUseDistribute);
         System.out.println("    cpReduceArrLength: " + cpReduceArrLength);
@@ -47,6 +50,7 @@ public class Settings {
         System.out.println("      vrpSearchDist: " + vrpSearchDist);
         System.out.println("      vrpSearchTime: " + vrpSearchTime);
         System.out.println("    tsp:");
+        System.out.println("      tspLocalSearch: " + tspLocalSearch);
         System.out.println("      tspLimitBy: " + tspLimitBy);
         System.out.println("      tspSearchDist: " + tspSearchDist);
         System.out.println("      tspSearchTime: " + tspSearchTime);
