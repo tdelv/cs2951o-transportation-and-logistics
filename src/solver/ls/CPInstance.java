@@ -30,126 +30,52 @@ public class CPInstance {
             bins.add(new ArrayList<>());
         }
 
-        Optional<Solution> feasible = solve(bins, true);
-
-        return feasible;
+        return solve(bins);
     }
 
-    public Optional<Solution> solve(List<List<Integer>> bins, boolean optimize) throws IloException {
+    public Optional<Solution> solve(List<List<Integer>> bins) throws IloException {
         start();
-        // Find unclaimed customers
-        int[] customerArray;
-        {
-            List<Integer> unclaimedCustomers = new ArrayList<Integer>();
-            for (int c = 1; c < problem.numCustomers; c++) {
-                boolean unclaimed = true;
-                for (int v = 0; v < problem.numVehicles; v++) {
-                    if (bins.get(v).contains(c)) {
-                        unclaimed = false;
-                        break;
-                    }
-                }
-                if (unclaimed) {
-                    unclaimedCustomers.add(c);
+
+        IloIntExpr[] vehicleLoads = new IloIntExpr[problem.numVehicles];
+        Arrays.fill(vehicleLoads, cp.sum(cp.intExpr(), problem.vehicleCapacity));
+
+        IloIntVar[] whichVehicle = new IloIntVar[problem.numCustomers - 1];
+        for (int c = 1; c < problem.numCustomers + 1; c ++) {
+            Optional<Integer> whichBin = Optional.empty();
+            for (int binInd = 0; binInd < bins.size(); binInd ++) {
+                if (bins.get(binInd).contains(c)) {
+                    whichBin = Optional.of(binInd);
+                    break;
                 }
             }
-            unclaimedCustomers.add(0);
-            customerArray = unclaimedCustomers.stream()
-                .mapToInt(Integer::intValue)
-                .toArray();
-        }
-
-        int numToClaim = customerArray.length - 1;
-
-        // Set up variables
-        int totalVars = 0;
-        IloIntVar[][] visitVehicleCustomer = new IloIntVar[problem.numVehicles][];
-        for (int v = 0; v < problem.numVehicles; v++) {
-            int numCustomers;
-            if (optimize) {
-                int maxCustomersForVehicle = problem.numCustomers / (v + 1);
-                numCustomers = Math.min(problem.maxCustomersPerVehicle, maxCustomersForVehicle);
+            if (whichBin.isPresent()) {
+                whichVehicle[c - 1] = cp.intVar(new int[] { whichBin.get() });
             } else {
-                numCustomers = numToClaim;
-            }
-            totalVars += numCustomers;
-            visitVehicleCustomer[v] = cp.intVarArray(numCustomers, customerArray, "vehicle" + v);
-        }
-
-        if (Settings.verbosity >= 5) {
-            for (int v = 0; v < problem.numVehicles; v++) {
-                System.out.println("Vehicle " + v + ":");
-                for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
-                    System.out.println("  Customer " + c + ": " + visitVehicleCustomer[v][c]);
-                }
+                whichVehicle[c - 1] = cp.intVar(0, problem.numVehicles - 1);
             }
         }
 
-        // Enforce that zeroes only appear as tail of sequence
-        for (int v = 0; v < problem.numVehicles; v++) {
-            for (int c = 0; c < visitVehicleCustomer[v].length - 1; c++) {
-                cp.add(cp.ifThen(
-                        cp.eq(visitVehicleCustomer[v][c], 0),
-                        cp.eq(visitVehicleCustomer[v][c + 1], 0)));
-            }
+        int[] demand = new int[problem.numCustomers - 1];
+        for (int c = 0; c < problem.numCustomers - 1; c ++) {
+            demand[c] = problem.demandOfCustomer[c + 1];
         }
 
-        // And that earlier trucks serve more customers
-        if (optimize) {
-            for (int v = 0; v < problem.numVehicles - 1; v++) {
-                for (int c = 0; c < visitVehicleCustomer[v + 1].length; c++) {
-                    cp.add(cp.ifThen(
-                            cp.eq(visitVehicleCustomer[v][c], 0),
-                            cp.eq(visitVehicleCustomer[v + 1][c], 0)));
-                }
-            }
-        }
-
-        // Flatten variable array
-        IloIntVar[] allVars = new IloIntVar[totalVars];
-        int currVar = 0;
-        for (int v = 0; v < problem.numVehicles; v++) {
-            for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
-                allVars[currVar++] = visitVehicleCustomer[v][c];
-            }
-        }
-
-        // Enforce that every unclaimed customer appears exactly once (and 0 fills the rest)
-        for (int c = 0; c < customerArray.length; c ++) {
-            if (customerArray[c] != 0) {
-                cp.add(cp.eq(cp.count(allVars, customerArray[c]), 1));
-            }
-        }
-        cp.add(cp.eq(cp.count(allVars, 0), totalVars - numToClaim));
-
-        // Enforces vehicle capacity limit
-        for (int v = 0; v < problem.numVehicles; v ++) {
-            IloIntExpr totalDemand = cp.intExpr();
-            for (int c : bins.get(v)) {
-                totalDemand = cp.sum(totalDemand, problem.demandOfCustomer[c]);
-            }
-            for (int c = 0; c < visitVehicleCustomer[v].length; c ++) {
-                totalDemand = cp.sum(totalDemand, cp.element(problem.demandOfCustomer, visitVehicleCustomer[v][c]));
-            }
-            cp.add(cp.le(totalDemand, problem.vehicleCapacity));
-        }
+        cp.add(cp.pack(vehicleLoads, whichVehicle, demand));
 
         // Solves
         if (cp.solve()) {
-            List<List<Integer>> paths = new ArrayList<>();
-            for (int v = 0; v < problem.numVehicles; v++) {
-                List<Integer> path = new ArrayList<>(bins.get(v));
-                for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
-                    int loc = (int) cp.getValue(visitVehicleCustomer[v][c]);
-                    if (loc == 0) {
-                        break;
-                    }
-                    path.add(loc);
-                }
-                paths.add(path);
+            List<List<Integer>> newBins = new ArrayList<>();
+            for (int v = 0; v < problem.numVehicles; v ++) {
+                newBins.add(new ArrayList<>());
             }
+
+            for (int c = 1; c < problem.numCustomers; c ++) {
+                int bin = (int) cp.getValue(whichVehicle[c - 1]);
+                newBins.get(bin).add(c);
+            }
+
             cp.end();
-            return Optional.of(new Solution(problem, paths));
+            return Optional.of(new Solution(problem, newBins));
         } else {
             cp.end();
             return Optional.empty();
