@@ -103,9 +103,6 @@ public class CPInstance {
         Optional<Solution> quadResults;
 
         if (problem.numVehicles < 8) {
-            // Get number of vehicles in each quadrant
-            int upperQuadVehicles = (int) Math.ceil(problem.numVehicles / 2.0);
-            int lowerQuadVehicles = (int) Math.floor(problem.numVehicles / 2.0);
 
             // Get customers in each quadrant
             ArrayList<Integer> upperQuadCustomerIndices = new ArrayList<>();
@@ -119,14 +116,36 @@ public class CPInstance {
                 else {
                     lowerQuadCustomerIndices.add(c);
                 }
-                System.out.println(upperQuadCustomerIndices);
-                System.out.println(lowerQuadCustomerIndices);
+//                System.out.println(upperQuadCustomerIndices);
+//                System.out.println(lowerQuadCustomerIndices);
             }
 
+            // Get customer demand in each quadrant
+            int upperQuadSumDemand = 0;
+            for (Integer customer : upperQuadCustomerIndices) {
+                upperQuadSumDemand += problem.demandOfCustomer[customer];
+            }
+            int lowerQuadSumDemand = 0;
+            for (Integer customer : lowerQuadCustomerIndices) {
+                lowerQuadSumDemand += problem.demandOfCustomer[customer];
+            }
+            int totalCustomerDemand = upperQuadSumDemand + lowerQuadSumDemand;
+
+            // Get number of vehicles in each quadrant
+//            int upperQuadVehicles = (int) Math.ceil(problem.numVehicles / 2.0);
+//            int lowerQuadVehicles = (int) Math.floor(problem.numVehicles / 2.0);
+            double proportionOfDemand = ((double) upperQuadSumDemand) / totalCustomerDemand;
+            System.out.println("proportion of demand = " + proportionOfDemand);
+            int upperQuadVehicles = (int) Math.round(problem.numVehicles *
+                    proportionOfDemand);
+            int lowerQuadVehicles = problem.numVehicles - upperQuadVehicles;
+
+            // Solve
             Optional<Solution> upperQuadSol = this.solveQuadrantBin(bins, upperQuadVehicles,
                     upperQuadCustomerIndices.size(), upperQuadCustomerIndices);
             Optional<Solution> lowerQuadSol = this.solveQuadrantBin(bins, lowerQuadVehicles,
                     lowerQuadCustomerIndices.size(), lowerQuadCustomerIndices);
+
 
             if (upperQuadSol.isPresent() && lowerQuadSol.isPresent()) {
                 System.out.println("yay quads worked");
@@ -137,18 +156,12 @@ public class CPInstance {
                 return Optional.of(new Solution(problem, joinedPaths));
             } else {
                 System.out.println("sad quads no work");
+                System.out.println("Vehicles:");
+                System.out.println(upperQuadVehicles + " " + lowerQuadVehicles);
                 return this.solveBin(bins);
             }
         }
         else {
-            // Get number of vehicles in each quadrant
-            int upperQuadVehicles = (int) Math.ceil(problem.numVehicles / 2.0);
-            int lowerQuadVehicles = (int) Math.floor(problem.numVehicles / 2.0);
-
-            int quad1Vehicles = (int) Math.ceil(upperQuadVehicles / 2.0);
-            int quad2Vehicles = (int) Math.floor(upperQuadVehicles / 2.0);
-            int quad3Vehicles = (int) Math.ceil(lowerQuadVehicles / 2.0);
-            int quad4Vehicles = (int) Math.floor(lowerQuadVehicles / 2.0);
 
             // Get customers in each quadrant
             ArrayList<Integer> quad1CustomerIndices = new ArrayList<>();
@@ -171,6 +184,46 @@ public class CPInstance {
                 }
             }
 
+            // Get number of vehicles in each quadrant
+//            int upperQuadVehicles = (int) Math.ceil(problem.numVehicles / 2.0);
+//            int lowerQuadVehicles = (int) Math.floor(problem.numVehicles / 2.0);
+//
+//            int quad1Vehicles = (int) Math.ceil(upperQuadVehicles / 2.0);
+//            int quad2Vehicles = (int) Math.floor(upperQuadVehicles / 2.0);
+//            int quad3Vehicles = (int) Math.ceil(lowerQuadVehicles / 2.0);
+//            int quad4Vehicles = (int) Math.floor(lowerQuadVehicles / 2.0);
+
+            int quad1SumDemand = 0;
+            for (Integer customer : quad1CustomerIndices) {
+                quad1SumDemand += problem.demandOfCustomer[customer];
+            }
+            int quad2SumDemand = 0;
+            for (Integer customer : quad2CustomerIndices) {
+                quad2SumDemand += problem.demandOfCustomer[customer];
+            }
+            int quad3SumDemand = 0;
+            for (Integer customer : quad3CustomerIndices) {
+                quad3SumDemand += problem.demandOfCustomer[customer];
+            }
+            int quad4SumDemand = 0;
+            for (Integer customer : quad4CustomerIndices) {
+                quad4SumDemand += problem.demandOfCustomer[customer];
+            }
+            int totalCustomerDemand = quad1SumDemand + quad2SumDemand + quad3SumDemand + quad4SumDemand;
+
+            double q1ProportionOfDemand = ((double) quad1SumDemand) / totalCustomerDemand;
+//            System.out.println("proportion of demand = " + proportionOfDemand);
+            int quad1Vehicles = (int) Math.round(problem.numVehicles *
+                    q1ProportionOfDemand);
+            double q2ProportionOfDemand = ((double) quad2SumDemand) / totalCustomerDemand;
+            int quad2Vehicles = (int) Math.round(problem.numVehicles *
+                    q2ProportionOfDemand);
+            double q3ProportionOfDemand = ((double) quad3SumDemand) / totalCustomerDemand;
+            int quad3Vehicles = (int) Math.round(problem.numVehicles *
+                    q3ProportionOfDemand);
+            int quad4Vehicles = problem.numVehicles - quad1Vehicles - quad2Vehicles - quad3Vehicles;
+
+            // Solve
             Optional<Solution> quad1Sol = this.solveQuadrantBin(bins, quad1Vehicles,
                     quad1CustomerIndices.size(), quad1CustomerIndices);
             Optional<Solution> quad2Sol = this.solveQuadrantBin(bins, quad2Vehicles,
@@ -192,6 +245,9 @@ public class CPInstance {
                 return Optional.of(new Solution(problem, joinedPaths));
             } else {
                 System.out.println("sad quads no work");
+                System.out.println("Vehicles:");
+                System.out.println(quad1Vehicles + " " + quad2Vehicles + " " + quad3Vehicles +
+                        " " + quad4Vehicles);
                 return this.solveBin(bins);
             }
         }
@@ -225,6 +281,38 @@ public class CPInstance {
 
         IloConstraint pack = cp.pack(vehicleLoads, whichVehicle, demand);
         cp.add(pack);
+
+        IloIntExpr wanderingTrucks = cp.intExpr();
+
+        for (int c1 = 1; c1 < problem.numCustomers; c1 ++) {
+            for (int c2 = c1; c2 < problem.numCustomers; c2 ++) {
+                if (problem.quadrantOfCustomer[c1] != problem.quadrantOfCustomer[c2]){
+                    IloIntVar truckIsWandering = cp.intVar(0,1);
+
+                    cp.add(cp.ifThenElse(
+                            cp.eq(whichVehicle[c1-1], whichVehicle[c2-1]),
+                            cp.eq(truckIsWandering, 1),
+                            cp.eq(truckIsWandering, 0)));
+
+                    wanderingTrucks = cp.sum(wanderingTrucks, truckIsWandering);
+                }
+
+            }
+        }
+
+//        cp.add(cp.minimize(wanderingTrucks));
+//        cp.add(cp.le(wanderingTrucks, 4000));
+
+        cp.setParameter(IloCP.DoubleParam.TimeLimit, 15);
+
+//        for (int v = 0; v < problem.numVehicles; v++) {
+//            IloIntExpr vehicleNumber = cp.sum(cp.intExpr(),v);
+//            IloIntExpr customersWithVehicle = cp.intExpr();
+//            for (int c = 0; c < problem.numCustomers-1; c++) {
+//                IloIntExpr customerInVehicle = cp.intExpr();
+//                cp.ifThen(cu)
+//            }
+//        }
 
         // Solves
         Optional<Solution> result;
