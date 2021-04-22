@@ -44,8 +44,9 @@ public class TSPLocalSearch extends AbstractLocalSearch<Double, TSPState> {
         } else {
             try {
                 CPInstance cpInstance = new CPInstance(problem);
-                List<Integer> soln = cpInstance.solveTSP(locations);
-                return new TSPState(problem, soln);
+                TSPState solution = new TSPState(problem, cpInstance.solveTSP(locations));
+                solved.put(bin, solution);
+                return solution;
             } catch (IloException e) {
                 e.printStackTrace();
                 System.exit(1);

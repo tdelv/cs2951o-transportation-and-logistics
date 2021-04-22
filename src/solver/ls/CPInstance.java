@@ -6,8 +6,11 @@ import ilog.cp.IloCP;
 import java.util.*;
 
 public class CPInstance {
+    private static Map<VRPInstance, CPInstance> cpInstances;
     private VRPInstance problem;
     private IloCP cp;
+
+
 
     public CPInstance(VRPInstance problem) throws IloException {
         this.problem = problem;
