@@ -28,6 +28,7 @@ public class Main {
         Settings.vrpSearchDist = parser.switchIntegerValue("-vrpSearchDist", 3);
         Settings.vrpSearchTime = parser.switchDoubleValue("-vrpSearchTime", 30.0);
 
+        Settings.tspLocalSearch = parser.switchBooleanValue("-tspLocalSearch", false);
         Settings.tspLimitBy = Settings.SearchLimit.valueOf(parser.switchValue("-tspLimitBy", "both"));
         Settings.tspSearchDist = parser.switchIntegerValue("-tspSearchDist", 3);
         Settings.tspSearchTime = parser.switchDoubleValue("-tspSearchTime", 1.0);

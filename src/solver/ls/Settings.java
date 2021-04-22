@@ -25,6 +25,7 @@ public class Settings {
     static double vrpSearchTime = 30.0;
 
     // TSP
+    static boolean tspLocalSearch = false;
     static SearchLimit tspLimitBy = SearchLimit.both;
     static int tspSearchDist = 3;
     static double tspSearchTime = 1.0;
@@ -47,6 +48,7 @@ public class Settings {
         System.out.println("      vrpSearchDist: " + vrpSearchDist);
         System.out.println("      vrpSearchTime: " + vrpSearchTime);
         System.out.println("    tsp:");
+        System.out.println("      tspLocalSearch: " + tspLocalSearch);
         System.out.println("      tspLimitBy: " + tspLimitBy);
         System.out.println("      tspSearchDist: " + tspSearchDist);
         System.out.println("      tspSearchTime: " + tspSearchTime);

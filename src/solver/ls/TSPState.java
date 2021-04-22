@@ -2,6 +2,7 @@ package solver.ls;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class TSPState extends AbstractLocalSearchState<Double> {
     private VRPInstance problem;
@@ -17,7 +18,7 @@ public class TSPState extends AbstractLocalSearchState<Double> {
     }
 
     @Override
-    public Double getValue() {
+    public Double getValue(Optional<Double> prevBeset) {
         Timer.tspGetValue.start();
         double dist = 0;
         double currX = 0, currY = 0;
