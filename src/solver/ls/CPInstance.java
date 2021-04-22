@@ -120,7 +120,7 @@ public class CPInstance {
         if (cp.solve()) {
             List<List<Integer>> paths = new ArrayList<>();
             for (int v = 0; v < problem.numVehicles; v++) {
-                List<Integer> path = new ArrayList<>();
+                List<Integer> path = new ArrayList<>(bins.get(v));
                 for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
                     int loc = (int) cp.getValue(visitVehicleCustomer[v][c]);
                     if (loc == 0) {
