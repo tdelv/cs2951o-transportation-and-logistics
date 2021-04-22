@@ -25,9 +25,9 @@ public class CPInstance {
     }
 
     public Optional<Solution> getFeasible() throws IloException {
-        ArrayList<Set<Integer>> bins = new ArrayList<>();
+        List<List<Integer>> bins = new ArrayList<>();
         for (int v = 0; v < problem.numVehicles; v++) {
-            bins.add(new HashSet<>());
+            bins.add(new ArrayList<>());
         }
 
         Optional<Solution> feasible = solve(bins, false);
@@ -35,52 +35,40 @@ public class CPInstance {
         return feasible;
     }
 
-    public Optional<Solution> solve(List<Set<Integer>> bins) throws IloException {
+    public Optional<Solution> solve(List<List<Integer>> bins) throws IloException {
         return this.solve(bins, true);
     }
 
-    public Optional<Solution> solve(List<Set<Integer>> bins, boolean minimize) throws IloException {
+    public Optional<Solution> solve(List<List<Integer>> bins, boolean minimize) throws IloException {
         start();
-        // Check if bins all empty
-        boolean allEmpty = true;
-        for (Set<Integer> bin : bins) {
-            allEmpty &= bin.isEmpty();
-        }
-
-        // Find inverted bins
-        Set<Integer> unclaimedCustomers = new HashSet<Integer>();
-        for (int c = 1; c < problem.numCustomers; c++) {
-            unclaimedCustomers.add(c);
-            for (int v = 0; v < problem.numVehicles; v++) {
-                if (bins.get(v).contains(c)) {
-                    unclaimedCustomers.remove(c);
-                    break;
+        // Find unclaimed customers
+        int[] customerArray;
+        {
+            List<Integer> unclaimedCustomers = new ArrayList<Integer>();
+            for (int c = 1; c < problem.numCustomers; c++) {
+                boolean unclaimed = true;
+                for (int v = 0; v < problem.numVehicles; v++) {
+                    if (bins.get(v).contains(c)) {
+                        unclaimed = false;
+                        break;
+                    }
+                }
+                if (unclaimed) {
+                    unclaimedCustomers.add(c);
                 }
             }
+            unclaimedCustomers.add(0);
+            customerArray = unclaimedCustomers.stream()
+                .mapToInt(Integer::intValue)
+                .toArray();
         }
+
+        int numToClaim = customerArray.length - 1;
 
         // Set up variables
         IloIntVar[][] visitVehicleCustomer = new IloIntVar[problem.numVehicles][];
-        int totalVars = 0;
         for (int v = 0; v < problem.numVehicles; v++) {
-            Set<Integer> customers = new HashSet<>(bins.get(v));
-            customers.add(0);
-            customers.addAll(unclaimedCustomers);
-            int[] customerArray = customers.stream()
-                    .mapToInt(Integer::intValue)
-                    .toArray();
-            int maxCustomersForVehicle = problem.numCustomers / (v + 1);
-            int numCustomers;
-            if (Settings.cpReduceArrLength && allEmpty) {
-                numCustomers = Math.min(problem.maxCustomersPerVehicle, maxCustomersForVehicle);
-            } else {
-                numCustomers = problem.numCustomers;
-            }
-            totalVars += numCustomers;
-            visitVehicleCustomer[v] = new IloIntVar[numCustomers];
-            for (int c = 0; c < numCustomers; c++) {
-                visitVehicleCustomer[v][c] = cp.intVar(customerArray);
-            }
+            visitVehicleCustomer[v] = cp.intVarArray(numToClaim, customerArray, "");
         }
 
         if (Settings.verbosity >= 5) {
@@ -101,19 +89,8 @@ public class CPInstance {
             }
         }
 
-        // And that earlier trucks serve more customers
-        if (allEmpty) {
-            for (int v = 0; v < problem.numVehicles - 1; v++) {
-                for (int c = 0; c < visitVehicleCustomer[v + 1].length; c++) {
-                    cp.add(cp.ifThen(
-                            cp.eq(visitVehicleCustomer[v][c], 0),
-                            cp.eq(visitVehicleCustomer[v + 1][c], 0)));
-                }
-            }
-        }
-
         // Flatten variable array
-        IloIntVar[] allVars = new IloIntVar[totalVars];
+        IloIntVar[] allVars = new IloIntVar[numToClaim * problem.numVehicles];
         int currVar = 0;
         for (int v = 0; v < problem.numVehicles; v++) {
             for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
@@ -121,55 +98,22 @@ public class CPInstance {
             }
         }
 
-        // Enforce that every variable appears exactly once (and 0 fills the rest)
-        if (Settings.cpUseDistribute) {
-            IloIntExpr[] cards = new IloIntExpr[problem.numCustomers];
-            int[] values = new int[problem.numCustomers];
-            cards[0] = cp.sum(cp.intExpr(), totalVars - problem.numCustomers);
-            values[0] = 0;
-            for (int c = 1; c < problem.numCustomers; c++) {
-                cards[c] = cp.sum(cp.intExpr(), 1);
-                values[c] = c;
-            }
-            cp.add(cp.distribute(cards, values, allVars));
-        } else {
-            for (int c = 1; c < problem.numCustomers; c++) {
-                cp.add(cp.eq(cp.count(allVars, c), 1));
-            }
-            cp.add(cp.eq(cp.count(allVars, 0), totalVars - (problem.numCustomers - 1)));
+        // Enforce that every unclaimed customer appears exactly once (and 0 fills the rest)
+        for (int c = 0; c < customerArray.length - 1; c ++) {
+            cp.add(cp.eq(cp.count(allVars, customerArray[c]), 1));
         }
+        cp.add(cp.eq(cp.count(allVars, 0), (numToClaim * problem.numVehicles) - numToClaim));
 
         // Enforces vehicle capacity limit
         for (int v = 0; v < problem.numVehicles; v ++) {
             IloIntExpr totalDemand = cp.intExpr();
+            for (int c : bins.get(v)) {
+                totalDemand = cp.sum(totalDemand, problem.demandOfCustomer[c]);
+            }
             for (int c = 0; c < visitVehicleCustomer[v].length; c ++) {
                 totalDemand = cp.sum(totalDemand, cp.element(problem.demandOfCustomer, visitVehicleCustomer[v][c]));
             }
             cp.add(cp.le(totalDemand, problem.vehicleCapacity));
-        }
-
-        // Find total distance traveled by trucks
-        if (minimize) {
-            IloNumExpr originX = cp.sum(cp.numExpr(), problem.xCoordOfCustomer[0]);
-            IloNumExpr originY = cp.sum(cp.numExpr(), problem.yCoordOfCustomer[0]);
-            IloNumExpr cost = cp.numExpr();
-            for (int v = 0; v < problem.numVehicles; v++) {
-                IloNumExpr x = originX;
-                IloNumExpr y = originY;
-                IloNumExpr dist = cp.numExpr();
-                for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
-                    IloIntVar loc = visitVehicleCustomer[v][c];
-                    IloNumExpr newX = cp.element(problem.xCoordOfCustomer, loc);
-                    IloNumExpr newY = cp.element(problem.yCoordOfCustomer, loc);
-
-                    dist = cp.sum(dist, distance(x, y, newX, newY));
-                    x = newX;
-                    y = newY;
-                }
-                dist = cp.sum(dist, distance(x, y, originX, originY));
-                cost = cp.sum(cost, dist);
-            }
-            cp.addMinimize(cost);
         }
 
         // Solves
@@ -192,10 +136,5 @@ public class CPInstance {
             cp.end();
             return Optional.empty();
         }
-    }
-
-    private IloNumExpr distance(IloNumExpr x1, IloNumExpr y1, IloNumExpr x2, IloNumExpr y2) throws IloException {
-        IloNumExpr oneHalf = cp.sum(cp.numExpr(), 0.5);
-        return cp.power(cp.sum(cp.square(cp.diff(x2, x1)), cp.square(cp.diff(y2, y1))), oneHalf);
     }
 }
