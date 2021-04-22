@@ -30,16 +30,12 @@ public class CPInstance {
             bins.add(new ArrayList<>());
         }
 
-        Optional<Solution> feasible = solve(bins, false);
+        Optional<Solution> feasible = solve(bins, true);
 
         return feasible;
     }
 
-    public Optional<Solution> solve(List<List<Integer>> bins) throws IloException {
-        return this.solve(bins, true);
-    }
-
-    public Optional<Solution> solve(List<List<Integer>> bins, boolean minimize) throws IloException {
+    public Optional<Solution> solve(List<List<Integer>> bins, boolean optimize) throws IloException {
         start();
         // Find unclaimed customers
         int[] customerArray;
@@ -66,9 +62,18 @@ public class CPInstance {
         int numToClaim = customerArray.length - 1;
 
         // Set up variables
+        int totalVars = 0;
         IloIntVar[][] visitVehicleCustomer = new IloIntVar[problem.numVehicles][];
         for (int v = 0; v < problem.numVehicles; v++) {
-            visitVehicleCustomer[v] = cp.intVarArray(numToClaim, customerArray, "");
+            int numCustomers;
+            if (optimize) {
+                int maxCustomersForVehicle = problem.numCustomers / (v + 1);
+                numCustomers = Math.min(problem.maxCustomersPerVehicle, maxCustomersForVehicle);
+            } else {
+                numCustomers = numToClaim;
+            }
+            totalVars += numCustomers;
+            visitVehicleCustomer[v] = cp.intVarArray(numCustomers, customerArray, "");
         }
 
         if (Settings.verbosity >= 5) {
@@ -89,8 +94,19 @@ public class CPInstance {
             }
         }
 
+        // And that earlier trucks serve more customers
+        if (optimize) {
+            for (int v = 0; v < problem.numVehicles - 1; v++) {
+                for (int c = 0; c < visitVehicleCustomer[v + 1].length; c++) {
+                    cp.add(cp.ifThen(
+                            cp.eq(visitVehicleCustomer[v][c], 0),
+                            cp.eq(visitVehicleCustomer[v + 1][c], 0)));
+                }
+            }
+        }
+
         // Flatten variable array
-        IloIntVar[] allVars = new IloIntVar[numToClaim * problem.numVehicles];
+        IloIntVar[] allVars = new IloIntVar[totalVars];
         int currVar = 0;
         for (int v = 0; v < problem.numVehicles; v++) {
             for (int c = 0; c < visitVehicleCustomer[v].length; c++) {
