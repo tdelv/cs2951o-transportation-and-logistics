@@ -18,6 +18,8 @@ public class VRPInstance {
     double[] xCoordOfCustomer;    // the x coordinate of each customer
     double[] yCoordOfCustomer;    // the y coordinate of each customer
 
+    int[] quadrantOfCustomer; // Which Cartesian quadrant each customer is in
+
     int maxCustomersPerVehicle;
 
     public VRPInstance(String fileName) {
@@ -59,7 +61,12 @@ public class VRPInstance {
             }
             maxCustomersPerVehicle++;
         }
+
+        quadrantOfCustomer = new int[numCustomers];
+        this.setUpQuadrants();
     }
+
+
 
     public Optional<Solution> solve() throws IloException {
         CPInstance cpInstance = CPInstance.getInstance(this);
@@ -82,5 +89,26 @@ public class VRPInstance {
         Timer.lsTimer.stop();
 
         return solution;
+    }
+
+    private void setUpQuadrants() {
+        for (int c = 0; c < numCustomers; c ++) {
+            double custX = xCoordOfCustomer[c] - xCoordOfCustomer[0];
+            double custY = yCoordOfCustomer[c] - yCoordOfCustomer[0];
+
+            if ((custX >= 0) && (custY >= 0)) {
+                quadrantOfCustomer[c] = 1;
+            }
+            else if ((custX <= 0) && (custY >= 0)) {
+                quadrantOfCustomer[c] = 2;
+            }
+            else if ((custX <= 0) && (custY <= 0)) {
+                quadrantOfCustomer[c] = 3;
+            }
+            else {
+                quadrantOfCustomer[c] = 4;
+            }
+
+        }
     }
 }
