@@ -10,12 +10,12 @@ import java.util.Optional;
 
 public class Main {
     public static void main(String[] args) {
-        System.out.println("TEST");
         if (args.length == 0) {
             System.out.println("Usage: java Main <file>");
             return;
         }
 
+        // Parse command line settings
         CliArgs parser = new CliArgs(args);
         String input = parser.arg(0);
         Settings.verbosity = parser.switchIntegerValue("-verbosity", 0);
@@ -25,7 +25,13 @@ public class Main {
 
         Settings.vrpLimitBy = Settings.SearchLimit.valueOf(parser.switchValue("-vrpLimitBy", "time"));
         Settings.vrpSearchDist = parser.switchIntegerValue("-vrpSearchDist", 3);
-        Settings.vrpSearchTime = parser.switchDoubleValue("-vrpSearchTime", 30.0);
+        Settings.vrpSearchTime = parser.switchDoubleValue("-vrpSearchTime", 295.0);
+
+        Settings.startRandDistFactor = parser.switchDoubleValue("-startRandDistFactor", 0.95);
+        Settings.minDist = parser.switchDoubleValue("-minDist", 0.5);
+        Settings.minDistFactor = parser.switchDoubleValue("-minDistFactor", 0.8);
+        Settings.randDistFactor = parser.switchDoubleValue("-randDistFactor", 0.99);
+        Settings.useBadness = parser.switchBooleanValue("-useBadness", true);
 
         Settings.tspSearch = Settings.TSPSearch.valueOf(parser.switchValue("-tspSearch", "nearestNeighbor"));
         Settings.tspLimitBy = Settings.SearchLimit.valueOf(parser.switchValue("-tspLimitBy", "both"));
@@ -43,13 +49,15 @@ public class Main {
         System.out.println("Instance: " + input);
 
         try {
+            // Solve problem
             Timer watch = Timer.totalTimer;
             watch.start();
             VRPInstance problem = new VRPInstance(input);
-            Optional<Solution> solutionOpt = problem.solve();
+            Optional<Solution> solutionOpt = problem.solve(); // GOTO: VRPIInstance.solve
             watch.stop();
 
             if (solutionOpt.isPresent()) {
+                // Print solution
                 Solution solution = solutionOpt.get();
                 assert solution.isWellFormed() : "Solution not well formed: " + solution.toString();
                 assert solution.isFeasible() : "Solution is not feasible: " + solution.toString();

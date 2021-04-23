@@ -21,6 +21,12 @@ public class Settings {
     static int vrpSearchDist = 3;
     static double vrpSearchTime = 30.0;
 
+    static double startRandDistFactor = 0.99;
+    static double minDist = 0.5;
+    static double minDistFactor = 0.9;
+    static double randDistFactor = 0.999;
+    static boolean useBadness = true;
+
     // TSP
     enum TSPSearch {
         localSearch,
@@ -48,6 +54,12 @@ public class Settings {
         System.out.println("      vrpLimitBy: " + vrpLimitBy);
         System.out.println("      vrpSearchDist: " + vrpSearchDist);
         System.out.println("      vrpSearchTime: " + vrpSearchTime);
+        System.out.println("                     ");
+        System.out.println("      startRandDistFactor: " + startRandDistFactor);
+        System.out.println("      minDist: " + minDist);
+        System.out.println("      minDistFactor: " + minDistFactor);
+        System.out.println("      randDistFactor: " + randDistFactor);
+        System.out.println("      useBadness: " + useBadness);
         System.out.println("    tsp:");
         System.out.println("      tspSearch: " + tspSearch);
         System.out.println("      tspLimitBy: " + tspLimitBy);

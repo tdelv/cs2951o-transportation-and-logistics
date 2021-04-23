@@ -63,8 +63,10 @@ public class VRPInstance {
 
     public Optional<Solution> solve() throws IloException {
         CPInstance cpInstance = CPInstance.getInstance(this);
+
+        // Get feasible bin packing
         Timer.cpTimer.start();
-        Optional<Solution> feasible = cpInstance.getFeasible();
+        Optional<Solution> feasible = cpInstance.getFeasible(); // GOTO: CPInstance.getFeasible
         Timer.cpTimer.stop();
         if (!feasible.isPresent()) {
             return feasible;
@@ -73,10 +75,12 @@ public class VRPInstance {
             System.out.println("Initial feasibility cost: " + feasible.get().getCost());
         }
 
+        // Perform local search
         LSInstance lsInstance = new LSInstance(this);
         Timer.lsTimer.start();
-        Optional<Solution> solution = Optional.of(lsInstance.solve(feasible.get()));
+        Optional<Solution> solution = Optional.of(lsInstance.solve(feasible.get())); // GOTO: LSInstance.solve
         Timer.lsTimer.stop();
+
         return solution;
     }
 }

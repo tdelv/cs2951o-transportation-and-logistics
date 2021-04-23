@@ -11,7 +11,7 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
     }
 
     public State search(double maxTime) {
-        return search(Optional.empty(), Optional.of(maxTime));
+        return search(Optional.empty(), Optional.of(maxTime)); // GOTO: VRPLocalSearch.search
     }
 
     public State search(int maxDist, double maxTime) {
@@ -22,7 +22,7 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
         if (Settings.lsSearchProcedural) {
             return searchProcedural(maxDist, maxTime);
         } else {
-            return searchRandom(maxDist, maxTime);
+            return searchRandom(maxDist, maxTime); // GOTO: VRPLocalSearch.searchRandom
         }
     }
 
@@ -30,19 +30,56 @@ abstract class AbstractLocalSearch<T extends Comparable<T>, State extends Abstra
         State best = getInitial();
         State current = best;
 
-        double probRandWalk = Settings.probRandWalk;
+        // Parameters for search
+
+        // Where to reset randDist to when find improvement or reach minimum
+        double startRandDist = 1;
+        double startRandDistFactor = Settings.startRandDistFactor;
+
+        // Minimum randDist to reach
+        double minDist = Settings.minDist;
+        double minDistFactor = Settings.minDistFactor;
+
+        // The distance to randomly search within (range [0.0, 1.0])
+        double randDist = startRandDist;
+        double randDistFactor = Settings.randDistFactor;
 
         Timer timer = new Timer();
         timer.start();
-        int count = 0;
+        int count = 0; // Unused
         while ((!maxDist.isPresent() || count++ <= maxDist.get()) && (!maxTime.isPresent() || timer.getCurrentTime() < maxTime.get())) {
-            State next = (State) current.getRandom(Settings.rand.nextDouble() * Settings.randMaxDist);
-            if (lt(next, current)) {
+            // Go back to startRandDist if randDist too small
+            if (randDist < minDist) {
+                minDist *= minDistFactor;
+                minDist = Math.max(minDist, 0.01);
+                randDist = startRandDist;
+                startRandDist *= startRandDistFactor;
+                // Reset search to start if startRandDist too small
+                if (startRandDist < 0.005) {
+                    startRandDist = 1;
+                    startRandDistFactor = Settings.startRandDistFactor;
+                    minDist = Settings.minDist;
+                    minDistFactor = Settings.minDistFactor;
+                    randDist = startRandDist;
+                    randDistFactor = Settings.randDistFactor;
+                }
+                Settings.debug(1, "Restart; Min: " + minDist + "; RandDist: " + randDist);
+            }
+            Settings.debug(8, "RandDist: " + randDist);
+
+            // Get a random state within distance randDist
+            State next = (State) current.getRandom(randDist); // GOTO: VRPState.getRandom
+
+            // If this is an improvement, update and reset to startRandDist;
+            // otherwise, shrink search radius
+            if (lt(next, current)) { // GOTO: VRPState.getValue
+                Settings.debug(1, "Better at: " + randDist);
+                randDist = startRandDist;
+                startRandDist *= startRandDistFactor;
                 current = next;
                 best = min(best, next);
-            } else if (Settings.rand.nextDouble() < probRandWalk) {
-                probRandWalk *= Settings.probRandWalkFactor;
-                current = next;
+            } else {
+                randDist *= randDistFactor;
             }
         }
 

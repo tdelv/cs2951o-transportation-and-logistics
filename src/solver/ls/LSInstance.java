@@ -10,6 +10,7 @@ public class LSInstance {
     }
 
     public Solution solve(Solution feasible) {
+        // Create local search problem
         VRPLocalSearch vrpLS = new VRPLocalSearch(problem, feasible.getPaths());
         VRPState solution = null;
         switch (Settings.vrpLimitBy) {
@@ -17,7 +18,7 @@ public class LSInstance {
                 solution = vrpLS.search(Settings.vrpSearchDist);
                 break;
             case time:
-                solution = vrpLS.search(Settings.vrpSearchTime);
+                solution = vrpLS.search(Settings.vrpSearchTime); // GOTO: VRPLocalSearch.search
                 break;
             case both:
                 solution = vrpLS.search(Settings.vrpSearchDist, Settings.vrpSearchTime);

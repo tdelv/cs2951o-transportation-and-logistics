@@ -15,11 +15,13 @@ public class TSPLocalSearch extends AbstractLocalSearch<Double, TSPState> {
     }
 
     public TSPState solve() {
+        // If already solved, return past result
         Set<Integer> bin = new HashSet<>(this.locations);
         if (solved.containsKey(bin)) {
             return solved.get(bin);
         }
 
+        // (Jump to line 60)
         switch (Settings.tspSearch) {
             case localSearch: {
                 Timer.tspTimer.start();
@@ -54,8 +56,13 @@ public class TSPLocalSearch extends AbstractLocalSearch<Double, TSPState> {
                     return null;
                 }
             }
-            case nearestNeighbor:
-                return this.getInitial();
+            case nearestNeighbor: {
+                // Do nearest neighbor
+                Timer.tspTimer.start();
+                TSPState result = this.getInitial(); // GOTO: getInitial
+                Timer.tspTimer.stop();
+                return result;
+            }
             default:
                 System.err.println("Unhandled tspSearch: " + Settings.tspSearch);
                 System.exit(1);
@@ -65,10 +72,14 @@ public class TSPLocalSearch extends AbstractLocalSearch<Double, TSPState> {
 
     @Override
     TSPState getInitial() {
+        // Perform nearest neighbor
+
         Set<Integer> toVisit = new HashSet<>(locations);
         double currX = problem.xCoordOfCustomer[0];
         double currY = problem.yCoordOfCustomer[0];
         List<Integer> path = new ArrayList<>();
+
+        // Take from toVisit the nearest neighbor until empty
         while (!toVisit.isEmpty()) {
             Optional<Integer> best = Optional.empty();
             Optional<Double> bestDist = Optional.empty();
@@ -85,6 +96,7 @@ public class TSPLocalSearch extends AbstractLocalSearch<Double, TSPState> {
             currX = problem.xCoordOfCustomer[best.get()];
             currY = problem.yCoordOfCustomer[best.get()];
         }
+
         return new TSPState(problem, path);
     }
 }

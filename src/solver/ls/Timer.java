@@ -5,6 +5,7 @@ public class Timer {
     public static Timer totalTimer = new Timer();
     public static Timer cpTimer = new Timer();
     public static Timer lsTimer = new Timer();
+    public static Timer lsNeighbor = new Timer();
     public static Timer tspTimer = new Timer();
     public static Timer tspGetValue = new Timer();
     public static Timer tspGetNeighbors = new Timer();
@@ -66,6 +67,7 @@ public class Timer {
         System.out.println("Total time: " + totalTimer);
         System.out.println("  CP feasible: " + cpTimer);
         System.out.println("  LS search: " + lsTimer);
+        System.out.println("    LS neighbor: " + lsNeighbor);
         System.out.println("    TSP solve: " + tspTimer);
         System.out.println("      TSP getValue: " + tspGetValue);
         System.out.println("      TSP getNeighbors: " + tspGetNeighbors);

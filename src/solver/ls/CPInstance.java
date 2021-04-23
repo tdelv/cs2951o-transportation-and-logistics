@@ -36,21 +36,29 @@ public class CPInstance {
     }
 
     public Optional<Solution> getFeasible() throws IloException {
+        // Set bins to empty
         List<List<Integer>> bins = new ArrayList<>();
         for (int v = 0; v < problem.numVehicles; v++) {
             bins.add(new ArrayList<>());
         }
 
-        return solveBin(bins);
+        // Solve bin packing
+        return solveBin(bins); // GOTO: this.solveBin
     }
 
     public Optional<Solution> solveBin(List<List<Integer>> bins) throws IloException {
+        // Setup cp solver
         start();
 
+        // Setup bin packing
+
+        // Loads
         IloIntExpr[] vehicleLoads = cp.intVarArray(problem.numVehicles, 0, problem.vehicleCapacity);
 
+        // Where
         IloIntVar[] whichVehicle = new IloIntVar[problem.numCustomers - 1];
         for (int c = 1; c < problem.numCustomers; c ++) {
+            // Check if customer in a bin
             Optional<Integer> whichBin = Optional.empty();
             for (int binInd = 0; binInd < bins.size(); binInd ++) {
                 if (bins.get(binInd).contains(c)) {
@@ -58,6 +66,9 @@ public class CPInstance {
                     break;
                 }
             }
+
+            // If a customer is already assigned to a bin, assign to bin;
+            // otherwise, set to any bin.
             if (whichBin.isPresent()) {
                 whichVehicle[c - 1] = cp.intVar(new int[] { whichBin.get() });
             } else {
@@ -65,17 +76,20 @@ public class CPInstance {
             }
         }
 
+        // Weights
         int[] demand = new int[problem.numCustomers - 1];
         for (int c = 0; c < problem.numCustomers - 1; c ++) {
             demand[c] = problem.demandOfCustomer[c + 1];
         }
 
+        // Pack
         IloConstraint pack = cp.pack(vehicleLoads, whichVehicle, demand);
         cp.add(pack);
 
-        // Solves
+        // Solve
         Optional<Solution> result;
         if (cp.solve()) {
+            // Create full bins
             List<List<Integer>> newBins = new ArrayList<>();
             for (int v = 0; v < problem.numVehicles; v ++) {
                 newBins.add(new ArrayList<>());
@@ -90,11 +104,13 @@ public class CPInstance {
         } else {
             result = Optional.empty();
         }
+
         cp.end();
         return result;
     }
 
     public List<Integer> solveTSP(List<Integer> bin) throws IloException {
+        // UNUSED
         start();
 
         int[] binValues = bin.stream().mapToInt(Integer::intValue).toArray();
